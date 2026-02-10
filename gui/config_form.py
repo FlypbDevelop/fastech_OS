@@ -80,6 +80,9 @@ class ConfigForm(tk.Frame):
         # Aba Geral
         self._criar_aba_geral(notebook)
         
+        # Aba Manual de Uso
+        self._criar_aba_manual(notebook)
+        
         # Aba Sobre
         self._criar_aba_sobre(notebook)
         
@@ -372,7 +375,137 @@ Equipamentos por Status:
         # Status
         self.geral_status = StatusLabel(content)
         self.geral_status.pack(pady=PADDING['large'])
-    
+
+    def _criar_aba_manual(self, notebook):
+        """Cria aba de manual de uso"""
+        frame = tk.Frame(notebook, bg=COLORS['white'])
+        notebook.add(frame, text='📖 Manual de Uso')
+        
+        # Cria um canvas com scrollbar para o conteúdo
+        canvas = tk.Canvas(frame, bg=COLORS['white'], highlightthickness=0)
+        scrollbar = ttk.Scrollbar(frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg=COLORS['white'])
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Conteúdo do manual de uso
+        content = tk.Frame(scrollable_frame, bg=COLORS['white'])
+        content.pack(fill='both', expand=True, padx=PADDING['large'], pady=PADDING['large'])
+        
+        # Título
+        title = tk.Label(
+            content,
+            text="📖 MANUAL DE USO DO SISTEMA FASTTECH CONTROL",
+            font=('Segoe UI', 16, 'bold'),
+            bg=COLORS['white'],
+            fg=COLORS['primary']
+        )
+        title.pack(anchor='w', pady=(0, PADDING['large']))
+        
+        # Seções do manual
+        manual_content = """
+1. CADASTRO DE CLIENTES
+   • Acesse "Clientes" → "Novo Cliente"
+   • Preencha os dados obrigatórios: Nome, CPF/CNPJ, Email, Telefone
+   • O código é gerado automaticamente
+   • Use "Salvar" para confirmar ou "Cancelar" para voltar
+
+2. CADASTRO DE EQUIPAMENTOS
+   • Acesse "Equipamentos" → "Novo Equipamento"
+   • Preencha os dados: Código, Descrição, Marca, Modelo, Patrimônio
+   • Selecione o cliente proprietário
+   • Defina o status inicial (Disponível, Em Manutenção, etc.)
+   • Use "Salvar" para confirmar
+
+3. MOVIMENTAÇÃO DE EQUIPAMENTOS
+   • Acesse "Movimentações" → "Nova Movimentação"
+   • Selecione o equipamento e o tipo de movimentação
+   • Preencha os detalhes: Data, Responsável, Observações
+   • Para devolução, selecione "Devolução" como tipo
+   • O status do equipamento é atualizado automaticamente
+
+4. CONSULTAS E RELATÓRIOS
+   • Acesse "Consultas" para pesquisar equipamentos
+   • Use filtros por cliente, status ou data
+   • Exporte resultados em Excel usando o botão "Exportar"
+
+5. CONFIGURAÇÕES DO SISTEMA
+   • Acesse "Configurações" para ajustar:
+     - Backup automático
+     - Tema (Claro/Escuro)
+     - Usuário padrão
+     - Pasta de backups
+
+6. BACKUP E RESTAURAÇÃO
+   • Configure backup automático na aba "Configurações"
+   • Use "Criar Backup Agora" para backup manual
+   • Acompanhe os backups antigos e limpe conforme necessário
+   • Use "Restaurar Backup" apenas em casos especiais
+
+7. DICAS IMPORTANTES
+   • Sempre faça backup antes de operações críticas
+   • Use códigos descritivos para equipamentos
+   • Mantenha os dados dos clientes atualizados
+   • Utilize o campo de observações nas movimentações
+
+8. SUPORTE E AJUDA
+   • Em caso de dúvidas, consulte a documentação
+   • Contate o administrador do sistema para problemas técnicos
+   • Use a aba "Sobre" para informações da versão
+        """.strip()
+        
+        # Adiciona o conteúdo formatado
+        lines = manual_content.split('\n')
+        for line in lines:
+            if line.strip().startswith(('1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.')):
+                # Título de seção
+                label = tk.Label(
+                    content,
+                    text=line.strip(),
+                    font=('Segoe UI', 12, 'bold'),
+                    bg=COLORS['white'],
+                    fg=COLORS['secondary'],
+                    anchor='w',
+                    justify='left'
+                )
+            elif line.strip().startswith('•'):
+                # Item de lista
+                label = tk.Label(
+                    content,
+                    text=line,
+                    font=('Segoe UI', 10),
+                    bg=COLORS['white'],
+                    fg=COLORS['text'],
+                    anchor='w',
+                    justify='left'
+                )
+            else:
+                # Subtítulo ou item secundário
+                label = tk.Label(
+                    content,
+                    text=line,
+                    font=('Segoe UI', 10),
+                    bg=COLORS['white'],
+                    fg=COLORS['text'],
+                    anchor='w',
+                    justify='left'
+                )
+            
+            label.pack(anchor='w', pady=(2, 2))
+        
+        # Adiciona um espaço final
+        tk.Frame(content, height=50, bg=COLORS['white']).pack()
+        
+        # Empacota o canvas e scrollbar
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
     def _criar_aba_sobre(self, notebook):
         """Cria aba sobre o sistema"""
         frame = tk.Frame(notebook, bg=COLORS['white'])
