@@ -50,29 +50,9 @@ class Dashboard(tk.Frame):
             fg='#64748b'
         ).pack(side='left')
         
-        # Container direito com licença, calendário e hora
+        # Container direito com calendário e hora
         right_container = tk.Frame(header_content, bg='#0f1419')
         right_container.pack(side='right')
-        
-        # Licença (substituindo área vermelha)
-        licenca_frame = tk.Frame(right_container, bg='#0f1419')
-        licenca_frame.pack(side='left', padx=(0, 30))
-        
-        tk.Label(
-            licenca_frame,
-            text="Licença:",
-            font=('Segoe UI', 12),
-            bg='#0f1419',
-            fg='#64748b'
-        ).pack()
-        
-        tk.Label(
-            licenca_frame,
-            text="Grátis",  # Pode ser alterado para Padrão ou Premium
-            font=('Segoe UI', 14, 'bold'),
-            bg='#0f1419',
-            fg='#00ff88'
-        ).pack()
         
         # Calendário clicável (substituindo área amarela)
         calendario_frame = tk.Frame(right_container, bg='#0f1419')
@@ -420,15 +400,15 @@ class Dashboard(tk.Frame):
         
         # Simular bordas arredondadas com múltiplas camadas
         # Camada externa (mais escura)
-        outer_border = tk.Frame(card_outer, bg='#2a2a2a')
+        outer_border = tk.Frame(card_outer, bg='#2a2a2a', relief='raised', bd=1)
         outer_border.pack(fill='both', expand=True, padx=1, pady=1)
         
         # Camada média
-        middle_border = tk.Frame(outer_border, bg='#3a3a3a')
+        middle_border = tk.Frame(outer_border, bg='#3a3a3a', relief='raised', bd=1)
         middle_border.pack(fill='both', expand=True, padx=1, pady=1)
         
         # Card principal
-        card = tk.Frame(middle_border, bg=bg_color, relief='flat')
+        card = tk.Frame(middle_border, bg=bg_color, relief='flat', bd=0)
         card.pack(fill='both', expand=True, padx=1, pady=1)
         
         # Área interna
