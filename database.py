@@ -113,8 +113,15 @@ class Database:
     
     def atualizar_cliente(self, cliente_id: int, **kwargs) -> bool:
         """Atualiza dados de um cliente"""
-        campos = ", ".join([f"{k} = ?" for k in kwargs.keys()])
-        valores = list(kwargs.values()) + [cliente_id]
+        # Validar campos permitidos para evitar SQL injection
+        campos_permitidos = {'nome', 'telefone', 'email', 'endereco', 'documento', 'setor'}
+        campos_atualizar = {k: v for k, v in kwargs.items() if k in campos_permitidos}
+        
+        if not campos_atualizar:
+            return False
+            
+        campos = ", ".join([f"{k} = ?" for k in campos_atualizar.keys()])
+        valores = list(campos_atualizar.values()) + [cliente_id]
         
         try:
             self.cursor.execute(f"""
@@ -190,8 +197,15 @@ class Database:
     
     def atualizar_equipamento(self, equipamento_id: int, **kwargs) -> bool:
         """Atualiza dados de um equipamento"""
-        campos = ", ".join([f"{k} = ?" for k in kwargs.keys()])
-        valores = list(kwargs.values()) + [equipamento_id]
+        # Validar campos permitidos para evitar SQL injection
+        campos_permitidos = {'numero_serie', 'tipo', 'marca', 'modelo', 'status_atual', 'data_garantia', 'valor_estimado', 'observacoes'}
+        campos_atualizar = {k: v for k, v in kwargs.items() if k in campos_permitidos}
+        
+        if not campos_atualizar:
+            return False
+            
+        campos = ", ".join([f"{k} = ?" for k in campos_atualizar.keys()])
+        valores = list(campos_atualizar.values()) + [equipamento_id]
         
         try:
             self.cursor.execute(f"""

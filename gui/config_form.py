@@ -40,8 +40,11 @@ class ConfigForm(tk.Frame):
             try:
                 with open(self.config_file, 'r', encoding='utf-8') as f:
                     saved_config = json.load(f)
-                    self.config.update(saved_config)
-            except:
+                    # Validar e filtrar configurações carregadas para evitar injeção de configurações maliciosas
+                    for key in saved_config:
+                        if key in self.config and isinstance(saved_config[key], type(self.config[key])):
+                            self.config[key] = saved_config[key]
+            except (json.JSONDecodeError, TypeError):
                 pass
     
     def _salvar_config(self):

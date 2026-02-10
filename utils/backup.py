@@ -90,6 +90,13 @@ class BackupManager:
     
     def deletar_backup(self, backup_path: str) -> bool:
         """Deleta um arquivo de backup"""
+        # Verificar se o caminho é seguro (está dentro do diretório de backups)
+        backup_path_real = os.path.realpath(backup_path)
+        backup_dir_real = os.path.realpath(self.backup_dir)
+        
+        if not backup_path_real.startswith(backup_dir_real + os.sep):
+            raise ValueError("Caminho de backup fora do diretório permitido")
+        
         if os.path.exists(backup_path):
             os.remove(backup_path)
             return True
