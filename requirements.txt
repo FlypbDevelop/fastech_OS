@@ -1,0 +1,9 @@
+# Dependências do FastTech Control
+# Python 3.8+
+
+# Não há dependências externas para a versão básica
+# tkinter vem incluído com Python no Windows
+# sqlite3 vem incluído com Python
+
+# Para geração do executável (desenvolvimento):
+pyinstaller>=5.0
