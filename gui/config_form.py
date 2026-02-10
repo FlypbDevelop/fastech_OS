@@ -470,7 +470,7 @@ Equipamentos por Status:
                     text=line.strip(),
                     font=('Segoe UI', 12, 'bold'),
                     bg=COLORS['white'],
-                    fg=COLORS['secondary'],
+                    fg=COLORS['primary'],
                     anchor='w',
                     justify='left'
                 )
