@@ -1,6 +1,6 @@
 # ⚙️ FastTech Control
 
-Sistema de Gestão de Equipamentos e Clientes desenvolvido em Python com interface gráfica.
+Sistema de Gestão de Equipamentos e Clientes desenvolvido em Python com interface gráfica moderna Flet.
 
 ## 📋 Sobre o Projeto
 
@@ -11,6 +11,7 @@ Sistema completo para controle interno de equipamentos, permitindo:
 - Consultas avançadas e relatórios
 - Sistema de backup automático
 - Temas claro e escuro
+- Interface moderna e intuitiva com Flet
 
 ## 🚀 Como Usar
 
@@ -68,7 +69,14 @@ python app.py
 
 ## 🎨 Interface
 
+### Dashboard
+- Visão geral do sistema com cards informativos
+- Estatísticas em tempo real
+- Calendário e relógio integrados
+- Indicadores de status do sistema
+
 ### Abas Principais
+- **🏠 Dashboard**: Visão geral e estatísticas
 - **👥 Clientes**: Cadastro e gestão de clientes
 - **📦 Equipamentos**: Cadastro e gestão de equipamentos
 - **🔄 Movimentações**: Registro de entregas/devoluções
@@ -79,23 +87,17 @@ python app.py
 - **☀️ Tema Claro**: Ideal para ambientes iluminados
 - **🌙 Tema Escuro**: Reduz fadiga ocular, ideal para uso prolongado
 
-Para alterar: Configurações → Geral → Tema → Salvar → Reiniciar
+Para alterar: Configurações → Geral → Tema → Salvar (aplicação imediata)
 
 ## ⌨️ Atalhos de Teclado
 
 ### Navegação
-- `Ctrl+1` - Aba Clientes
-- `Ctrl+2` - Aba Equipamentos
-- `Ctrl+3` - Aba Movimentações
-- `Ctrl+4` - Aba Consultas
-- `Ctrl+5` - Aba Configurações
+- Clique nos botões de navegação para alternar entre abas
+- Interface intuitiva com botões destacados
 
 ### Funções
-- `Ctrl+B` - Criar Backup
-- `Ctrl+S` - Salvar Configurações
-- `F5` - Atualizar Estatísticas
-- `F1` - Mostrar Atalhos
 - `Enter` - Executar busca (em campos de busca)
+- Botões de ação claramente identificados em cada aba
 
 ## 💾 Sistema de Backup
 
@@ -107,7 +109,6 @@ Para alterar: Configurações → Geral → Tema → Salvar → Reiniciar
 
 ### Backup Manual
 - **Configurações → Backup → 💾 Criar Backup Agora**
-- Ou pressione `Ctrl+B` em qualquer aba
 
 ### Restaurar Backup
 1. **Configurações → Backup → ♻️ Restaurar Backup**
@@ -132,37 +133,34 @@ Para alterar: Configurações → Geral → Tema → Salvar → Reiniciar
 
 ```
 fastech_control/
-├── app.py                 # Ponto de entrada da aplicação
+├── app.py                 # Aplicação principal Flet
 ├── database.py            # Gerenciamento do banco de dados
 ├── models.py              # Classes e constantes
 ├── requirements.txt       # Dependências Python
 ├── fastech.db            # Banco de dados SQLite
 ├── config.json           # Configurações do usuário
 │
-├── gui/                  # Interface gráfica
-│   ├── main_window.py    # Janela principal
-│   ├── cliente_form.py   # Formulário de clientes
-│   ├── equipamento_form.py
-│   ├── movimentacao_form.py
-│   ├── consulta_form.py
-│   ├── config_form.py
-│   ├── styles.py         # Sistema de estilos
-│   ├── styles_dark.py    # Tema escuro
-│   └── widgets.py        # Widgets customizados
+├── gui/                  # Interface gráfica (legado)
+│   └── __init__.py
 │
 ├── utils/                # Utilitários
 │   ├── validators.py     # Validações (CPF, CNPJ, etc)
-│   └── backup.py         # Sistema de backup
+│   ├── backup.py         # Sistema de backup
+│   └── __init__.py
 │
-└── backups/              # Backups automáticos
+├── backups/              # Backups automáticos
+│
+└── .kiro/                # Configurações Kiro
+    ├── steering/         # Diretrizes do projeto
+    └── skills/           # Habilidades customizadas
 ```
 
 ## 🔧 Tecnologias
 
 - **Python 3.8+**
-- **SQLite**: Banco de dados
-- **tkinter**: Interface gráfica
-- **Bibliotecas**: json, datetime, shutil, os
+- **Flet 0.80.5**: Framework de interface moderna e multiplataforma
+- **SQLite**: Banco de dados leve e eficiente
+- **Bibliotecas**: json, datetime, shutil, os, warnings
 
 ## 📊 Validações Implementadas
 
@@ -190,7 +188,7 @@ fastech_control/
 
 ## 🎯 Status do Projeto
 
-### ✅ Etapas Concluídas (7/8)
+### ✅ Etapas Concluídas (8/8)
 
 1. ✅ **Etapa 1**: Base de dados SQLite com validações
 2. ✅ **Etapa 2**: Interface GUI para clientes
@@ -203,10 +201,15 @@ fastech_control/
    - Temas claro/escuro
    - Configurações persistentes
    - Botões de ação visíveis
-8. ⏳ **Etapa 8**: Distribuição (pendente)
+8. ✅ **Etapa 8**: Migração para Flet
+   - Interface moderna e responsiva
+   - Melhor experiência do usuário
+   - Temas adaptativos com alto contraste
+   - Aplicação de tema em tempo real
 
 ### 🎨 Recursos Implementados
 
+- ✅ Dashboard com estatísticas em tempo real
 - ✅ CRUD completo de clientes
 - ✅ CRUD completo de equipamentos
 - ✅ Sistema de movimentações
@@ -215,11 +218,13 @@ fastech_control/
 - ✅ Exportação CSV
 - ✅ Backup automático/manual
 - ✅ Restauração de backups
-- ✅ Temas claro/escuro
+- ✅ Temas claro/escuro adaptativos
 - ✅ Validações robustas
-- ✅ Interface intuitiva
-- ✅ Atalhos de teclado
+- ✅ Interface moderna com Flet
+- ✅ Aplicação de tema em tempo real
 - ✅ Estatísticas do sistema
+- ✅ Calendário integrado
+- ✅ Cards informativos com alto contraste
 
 ## 🐛 Solução de Problemas
 
@@ -230,20 +235,21 @@ pip install -r requirements.txt
 
 # Verificar Python
 python --version  # Deve ser 3.8+
+
+# Verificar Flet
+pip show flet  # Deve ser 0.80.5 ou superior
 ```
 
 ### Erro no banco de dados
 ```bash
-# Verificar integridade
-python verificar_banco.py
-
-# Restaurar backup (se disponível)
-# Use: Configurações → Backup → Restaurar
+# Verificar integridade do banco
+# Use: Configurações → Backup → Restaurar (se disponível)
 ```
 
 ### Tema não aplica
-- Certifique-se de salvar as configurações
-- Feche e reabra a aplicação completamente
+- O tema é aplicado imediatamente ao salvar
+- Não é necessário reiniciar a aplicação
+- Verifique se salvou as configurações
 
 ## 📝 Configuração (config.json)
 
@@ -269,9 +275,11 @@ python verificar_banco.py
 
 - Total de clientes cadastrados
 - Total de equipamentos
-- Equipamentos por status
-- Equipamentos por tipo
+- Equipamentos por status (Em Estoque, Com Cliente, Em Manutenção)
+- Movimentações do mês
+- Status do sistema
 - Tamanho do banco de dados
+- Dashboard com cards informativos e visuais
 
 ## 🤝 Contribuindo
 
@@ -286,7 +294,32 @@ Projeto interno - Todos os direitos reservados
 
 ---
 
-**Versão**: 0.7.0  
-**Data**: 02/12/2024  
+**Versão**: 1.0.0  
+**Data**: 11/02/2026  
 **Status**: ✅ Funcional e Testado  
-**Desenvolvido com**: Python 3.8+ | SQLite | tkinter
+**Desenvolvido com**: Python 3.8+ | Flet 0.80.5 | SQLite
+
+## 🎉 Novidades da Versão 1.0.0
+
+### Interface Moderna com Flet
+- Migração completa de Tkinter para Flet
+- Interface mais moderna e profissional
+- Melhor experiência do usuário
+
+### Melhorias Visuais
+- Dashboard com cards informativos
+- Temas adaptativos com alto contraste
+- Cores otimizadas para melhor legibilidade
+- Botões com relevo e efeitos visuais
+
+### Funcionalidades Aprimoradas
+- Aplicação de tema em tempo real (sem reiniciar)
+- Calendário integrado no dashboard
+- Estatísticas visuais e intuitivas
+- Navegação simplificada com botões destacados
+
+### Otimizações
+- Remoção de avisos de depreciação
+- Código mais limpo e manutenível
+- Melhor performance geral
+- Interface responsiva
