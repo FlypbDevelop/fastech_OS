@@ -1,1 +1,35 @@
-Nothing should be ignored based on the provided file changes. The only modified file is a Python source file (`gui/flet_dashboard.py`), which should not be added to .gitignore.
+```
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+.MF
+tags
+TAGS
+.pytest_cache/
+.mypy_cache/
+.hypothesis/
+
+# Flet specific
+.flet/
+flet/
+```
