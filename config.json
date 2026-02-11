@@ -1,0 +1,7 @@
+{
+    "backup_automatico": false,
+    "backup_dias": 7,
+    "backup_pasta": "backups",
+    "tema": "claro",
+    "usuario_padrao": "Técnico"
+}

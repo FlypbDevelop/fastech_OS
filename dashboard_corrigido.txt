@@ -1,7 +1,0 @@
-import tkinter as tk
-from tkinter import ttk
-from gui.styles import COLORS, FONTS, PADDING
-from datetime import datetime, timedelta
-import locale
-
-# Configurar locale para português do Bra

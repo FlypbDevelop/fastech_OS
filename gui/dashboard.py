@@ -398,18 +398,10 @@ class Dashboard(tk.Frame):
         card_outer = tk.Frame(parent, bg='#0f1419')
         card_outer.grid(row=row, column=col, padx=12, pady=12, sticky='nsew')
         
-        # Simular bordas arredondadas com múltiplas camadas
-        # Camada externa (mais escura)
-        outer_border = tk.Frame(card_outer, bg='#2a2a2a', relief='raised', bd=1)
-        outer_border.pack(fill='both', expand=True, padx=1, pady=1)
-        
-        # Camada média
-        middle_border = tk.Frame(outer_border, bg='#3a3a3a', relief='raised', bd=1)
-        middle_border.pack(fill='both', expand=True, padx=1, pady=1)
-        
-        # Card principal
-        card = tk.Frame(middle_border, bg=bg_color, relief='flat', bd=0)
-        card.pack(fill='both', expand=True, padx=1, pady=1)
+        # Card principal com efeito de borda arredondada
+        card = tk.Frame(card_outer, bg=bg_color, relief='raised', bd=2, highlightthickness=2, 
+                       highlightbackground='#4a4a4a', highlightcolor='#4a4a4a')
+        card.pack(fill='both', expand=True)
         
         # Área interna
         card_inner = tk.Frame(card, bg=bg_color)
