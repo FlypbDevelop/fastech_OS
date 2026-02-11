@@ -32,6 +32,24 @@ class FastTechApp:
         # Criar interface
         self.criar_interface()
     
+    def get_adaptive_color(self, dark_color, light_color):
+        """Retorna cor adaptativa baseada no tema atual"""
+        if self.page.theme_mode == ft.ThemeMode.LIGHT:
+            return light_color
+        return dark_color
+    
+    def get_bg_color(self):
+        """Retorna cor de fundo adaptativa"""
+        return self.get_adaptive_color(ft.Colors.BLUE_GREY_900, ft.Colors.GREY_100)
+    
+    def get_text_color(self):
+        """Retorna cor de texto adaptativa"""
+        return self.get_adaptive_color(ft.Colors.WHITE, ft.Colors.BLACK)
+    
+    def get_secondary_text_color(self):
+        """Retorna cor de texto secundário adaptativa"""
+        return self.get_adaptive_color(ft.Colors.GREY_400, ft.Colors.GREY_700)
+    
     def criar_interface(self):
         """Cria a interface principal"""
         # Header
@@ -80,17 +98,65 @@ class FastTechApp:
         nav_bar = ft.Container(
             content=ft.Row(
                 [
-                    ft.FilledButton("🏠 Dashboard", on_click=ir_para_dashboard),
-                    ft.FilledButton("👥 Clientes", on_click=ir_para_clientes),
-                    ft.FilledButton("📦 Equipamentos", on_click=ir_para_equipamentos),
-                    ft.FilledButton("🔄 Movimentações", on_click=ir_para_movimentacoes),
-                    ft.FilledButton("🔍 Consultas", on_click=ir_para_consultas),
-                    ft.FilledButton("⚙️ Configurações", on_click=ir_para_configuracoes),
+                    ft.FilledButton(
+                        "🏠 Dashboard",
+                        on_click=ir_para_dashboard,
+                        style=ft.ButtonStyle(
+                            shape=ft.RoundedRectangleBorder(radius=8),
+                            padding=ft.Padding(left=20, right=20, top=12, bottom=12),
+                            elevation={"": 3, "hovered": 6},
+                        ),
+                    ),
+                    ft.FilledButton(
+                        "👥 Clientes",
+                        on_click=ir_para_clientes,
+                        style=ft.ButtonStyle(
+                            shape=ft.RoundedRectangleBorder(radius=8),
+                            padding=ft.Padding(left=20, right=20, top=12, bottom=12),
+                            elevation={"": 3, "hovered": 6},
+                        ),
+                    ),
+                    ft.FilledButton(
+                        "📦 Equipamentos",
+                        on_click=ir_para_equipamentos,
+                        style=ft.ButtonStyle(
+                            shape=ft.RoundedRectangleBorder(radius=8),
+                            padding=ft.Padding(left=20, right=20, top=12, bottom=12),
+                            elevation={"": 3, "hovered": 6},
+                        ),
+                    ),
+                    ft.FilledButton(
+                        "🔄 Movimentações",
+                        on_click=ir_para_movimentacoes,
+                        style=ft.ButtonStyle(
+                            shape=ft.RoundedRectangleBorder(radius=8),
+                            padding=ft.Padding(left=20, right=20, top=12, bottom=12),
+                            elevation={"": 3, "hovered": 6},
+                        ),
+                    ),
+                    ft.FilledButton(
+                        "🔍 Consultas",
+                        on_click=ir_para_consultas,
+                        style=ft.ButtonStyle(
+                            shape=ft.RoundedRectangleBorder(radius=8),
+                            padding=ft.Padding(left=20, right=20, top=12, bottom=12),
+                            elevation={"": 3, "hovered": 6},
+                        ),
+                    ),
+                    ft.FilledButton(
+                        "⚙️ Configurações",
+                        on_click=ir_para_configuracoes,
+                        style=ft.ButtonStyle(
+                            shape=ft.RoundedRectangleBorder(radius=8),
+                            padding=ft.Padding(left=20, right=20, top=12, bottom=12),
+                            elevation={"": 3, "hovered": 6},
+                        ),
+                    ),
                 ],
                 alignment=ft.MainAxisAlignment.START,
-                spacing=10,
+                spacing=12,
             ),
-            bgcolor=ft.Colors.BLUE_GREY_900,
+            bgcolor=self.get_bg_color(),
             padding=15,
         )
         
@@ -225,18 +291,36 @@ class FastTechApp:
     
     def criar_card(self, title_line1, title_line2, value, icon, color):
         """Cria um card do dashboard"""
+        # Cores adaptativas para melhor contraste
+        title_color = self.get_adaptive_color(ft.Colors.WHITE, ft.Colors.GREY_900)
+        subtitle_color = self.get_adaptive_color(ft.Colors.GREY_300, ft.Colors.GREY_800)
+        value_color = self.get_adaptive_color(ft.Colors.WHITE, ft.Colors.GREY_900)
+        
         return ft.Container(
             content=ft.Column(
                 [
-                    ft.Text(title_line1, size=11, weight=ft.FontWeight.BOLD, color=ft.Colors.WHITE),
-                    ft.Text(title_line2, size=9, color=ft.Colors.GREY_400),
-                    ft.Container(height=15),
+                    ft.Text(title_line1, size=13, weight=ft.FontWeight.BOLD, color=title_color),
+                    ft.Text(title_line2, size=11, color=subtitle_color, weight=ft.FontWeight.W_600),
+                    ft.Container(height=10),
                     ft.Row(
                         [
-                            ft.Text(icon, size=32),
-                            ft.Text(value, size=28, weight=ft.FontWeight.BOLD, color=color),
+                            ft.Text(icon, size=40),
+                            ft.Text(
+                                value, 
+                                size=42, 
+                                weight=ft.FontWeight.BOLD, 
+                                color=value_color,
+                                style=ft.TextStyle(
+                                    shadow=ft.BoxShadow(
+                                        spread_radius=1,
+                                        blur_radius=2,
+                                        color=ft.Colors.with_opacity(0.3, ft.Colors.BLACK),
+                                    )
+                                )
+                            ),
                         ],
                         alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
                     ),
                 ],
                 spacing=5,
@@ -247,10 +331,10 @@ class FastTechApp:
             bgcolor=color + "20",
             border_radius=15,
             border=ft.Border(
-                left=ft.BorderSide(2, color + "40"),
-                right=ft.BorderSide(2, color + "40"),
-                top=ft.BorderSide(2, color + "40"),
-                bottom=ft.BorderSide(2, color + "40"),
+                left=ft.BorderSide(3, color + "60"),
+                right=ft.BorderSide(3, color + "60"),
+                top=ft.BorderSide(3, color + "60"),
+                bottom=ft.BorderSide(3, color + "60"),
             ),
         )
     
@@ -394,7 +478,7 @@ class FastTechApp:
             ),
             width=450,
             padding=20,
-            bgcolor=ft.Colors.BLUE_GREY_900,
+            bgcolor=self.get_bg_color(),
             border_radius=10,
         )
         
@@ -422,7 +506,7 @@ class FastTechApp:
             ),
             expand=True,
             padding=20,
-            bgcolor=ft.Colors.BLUE_GREY_900,
+            bgcolor=self.get_bg_color(),
             border_radius=10,
         )
         
@@ -752,7 +836,7 @@ class FastTechApp:
             ),
             width=450,
             padding=20,
-            bgcolor=ft.Colors.BLUE_GREY_900,
+            bgcolor=self.get_bg_color(),
             border_radius=10,
         )
         
@@ -781,7 +865,7 @@ class FastTechApp:
             ),
             expand=True,
             padding=20,
-            bgcolor=ft.Colors.BLUE_GREY_900,
+            bgcolor=self.get_bg_color(),
             border_radius=10,
         )
         
@@ -1161,7 +1245,7 @@ class FastTechApp:
             ),
             width=450,
             padding=20,
-            bgcolor=ft.Colors.BLUE_GREY_900,
+            bgcolor=self.get_bg_color(),
             border_radius=10,
         )
         
@@ -1189,7 +1273,7 @@ class FastTechApp:
             ),
             expand=True,
             padding=20,
-            bgcolor=ft.Colors.BLUE_GREY_900,
+            bgcolor=self.get_bg_color(),
             border_radius=10,
         )
         
@@ -1374,7 +1458,7 @@ class FastTechApp:
                 spacing=10,
             ),
             padding=15,
-            bgcolor=ft.Colors.BLUE_GREY_800,
+            bgcolor=self.get_adaptive_color(ft.Colors.BLUE_GREY_800, ft.Colors.GREY_200),
         )
         
         # Inicializar com primeira view
@@ -1472,7 +1556,7 @@ Data Garantia: {equip['data_garantia'] or '-'}"""
         
         info_card = ft.Container(
             content=ft.Text(info_text, size=14),
-            bgcolor=ft.Colors.BLUE_GREY_800,
+            bgcolor=self.get_adaptive_color(ft.Colors.BLUE_GREY_800, ft.Colors.GREY_200),
             padding=20,
             border_radius=10,
         )
@@ -1677,7 +1761,7 @@ Data de Cadastro: {cliente['data_cadastro']}"""
         
         info_card = ft.Container(
             content=ft.Text(info_text, size=14),
-            bgcolor=ft.Colors.BLUE_GREY_800,
+            bgcolor=self.get_adaptive_color(ft.Colors.BLUE_GREY_800, ft.Colors.GREY_200),
             padding=20,
             border_radius=10,
         )
@@ -1777,7 +1861,7 @@ Data de Cadastro: {cliente['data_cadastro']}"""
         
         stats_card = ft.Container(
             content=self.stats_text,
-            bgcolor=ft.Colors.BLUE_GREY_800,
+            bgcolor=self.get_adaptive_color(ft.Colors.BLUE_GREY_800, ft.Colors.GREY_200),
             padding=20,
             border_radius=10,
         )
@@ -2002,7 +2086,7 @@ Equipamentos por Status:
                 spacing=10,
             ),
             padding=15,
-            bgcolor=ft.Colors.BLUE_GREY_800,
+            bgcolor=self.get_adaptive_color(ft.Colors.BLUE_GREY_800, ft.Colors.GREY_200),
         )
         
         # Inicializar com primeira view
@@ -2173,7 +2257,7 @@ Equipamentos por Status:
         
         stats_card = ft.Container(
             content=ft.Text(stats_text.strip(), size=14),
-            bgcolor=ft.Colors.BLUE_GREY_800,
+            bgcolor=self.get_adaptive_color(ft.Colors.BLUE_GREY_800, ft.Colors.GREY_200),
             padding=20,
             border_radius=10,
         )
@@ -2246,7 +2330,7 @@ Tecnologias:
         
         info_card = ft.Container(
             content=ft.Text(info_text, size=14, text_align=ft.TextAlign.CENTER),
-            bgcolor=ft.Colors.BLUE_GREY_800,
+            bgcolor=self.get_adaptive_color(ft.Colors.BLUE_GREY_800, ft.Colors.GREY_200),
             padding=20,
             border_radius=10,
             width=500,
