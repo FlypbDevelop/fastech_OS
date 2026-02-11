@@ -7,6 +7,10 @@ import flet as ft
 from database import Database
 from datetime import datetime
 import calendar
+import warnings
+
+# Suprimir todos os avisos de depreciação
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
 class FastTechApp:
@@ -26,8 +30,12 @@ class FastTechApp:
         else:
             self.page.theme_mode = ft.ThemeMode.DARK
         self.page.padding = 0
-        self.page.window_width = 1400
-        self.page.window_height = 800
+        # Remover tamanhos fixos para permitir responsividade
+        self.page.window_min_width = 800
+        self.page.window_min_height = 600
+        
+        # Listener para mudanças de tamanho
+        self.page.on_resize = self.on_page_resize
         
         # Criar interface
         self.criar_interface()
@@ -49,6 +57,19 @@ class FastTechApp:
     def get_secondary_text_color(self):
         """Retorna cor de texto secundário adaptativa"""
         return self.get_adaptive_color(ft.Colors.GREY_400, ft.Colors.GREY_700)
+    
+    def on_page_resize(self, e):
+        """Callback para quando a página é redimensionada"""
+        # Atualizar layout responsivo se necessário
+        self.page.update()
+    
+    def is_mobile_view(self):
+        """Verifica se está em visualização mobile (largura < 800px)"""
+        return self.page.window_width and self.page.window_width < 800
+    
+    def is_tablet_view(self):
+        """Verifica se está em visualização tablet (largura entre 800 e 1200px)"""
+        return self.page.window_width and 800 <= self.page.window_width < 1200
     
     def criar_interface(self):
         """Cria a interface principal"""
@@ -94,7 +115,7 @@ class FastTechApp:
             self.content_container.content = self.configuracoes_content
             self.page.update()
         
-        # Barra de navegação
+        # Barra de navegação responsiva
         nav_bar = ft.Container(
             content=ft.Row(
                 [
@@ -155,6 +176,8 @@ class FastTechApp:
                 ],
                 alignment=ft.MainAxisAlignment.START,
                 spacing=12,
+                wrap=True,  # Permite quebra de linha em telas pequenas
+                run_spacing=10,  # Espaçamento vertical quando quebra linha
             ),
             bgcolor=self.get_bg_color(),
             padding=15,
@@ -247,7 +270,7 @@ class FastTechApp:
             padding=ft.Padding(left=40, right=40, top=30, bottom=20),
         )
         
-        # Cards do dashboard
+        # Cards do dashboard - responsivos com wrap
         em_estoque = stats['por_status'].get('Em Estoque', 0)
         com_cliente = stats['por_status'].get('Com o Cliente', 0)
         em_manutencao = stats['por_status'].get('Em Manutenção', 0)
@@ -259,8 +282,10 @@ class FastTechApp:
                 self.criar_card("EM MANUTENÇÃO", "EQUIPAMENTOS", str(em_manutencao), "🔧", ft.Colors.ORANGE),
                 self.criar_card("SISTEMA", "STATUS", "OK", "✅", ft.Colors.GREEN),
             ],
-            alignment=ft.MainAxisAlignment.SPACE_AROUND,
+            alignment=ft.MainAxisAlignment.CENTER,
             spacing=20,
+            wrap=True,  # Permite quebra de linha
+            run_spacing=20,  # Espaçamento vertical quando quebra
         )
         
         cards_row2 = ft.Row(
@@ -270,8 +295,10 @@ class FastTechApp:
                 self.criar_card("COM CLIENTES", "EM USO", str(com_cliente), "📤", ft.Colors.INDIGO),
                 self.criar_card("BANCO DE DADOS", self.get_db_size(), "💾", "💾", ft.Colors.AMBER_900),
             ],
-            alignment=ft.MainAxisAlignment.SPACE_AROUND,
+            alignment=ft.MainAxisAlignment.CENTER,
             spacing=20,
+            wrap=True,  # Permite quebra de linha
+            run_spacing=20,  # Espaçamento vertical quando quebra
         )
         
         return ft.Container(
@@ -520,7 +547,6 @@ class FastTechApp:
                     ft.Container(width=20),
                     lista,
                 ],
-                expand=True,
             ),
             padding=20,
             expand=True,
@@ -879,7 +905,6 @@ class FastTechApp:
                     ft.Container(width=20),
                     lista,
                 ],
-                expand=True,
             ),
             padding=20,
             expand=True,
@@ -1289,7 +1314,6 @@ class FastTechApp:
                     ft.Container(width=20),
                     lista,
                 ],
-                expand=True,
             ),
             padding=20,
             expand=True,
@@ -1632,11 +1656,11 @@ Data Garantia: {equip['data_garantia'] or '-'}"""
     
     def criar_consulta_cliente(self):
         """Cria a view de busca por cliente"""
-        # Campo de busca
+        # Campo de busca - responsivo
         self.cliente_search_field = ft.TextField(
             label="Buscar Cliente",
             hint_text="Digite nome, telefone ou documento...",
-            width=400,
+            expand=True,
             on_submit=lambda e: self.buscar_cliente_consulta(),
         )
         
@@ -2146,19 +2170,19 @@ Equipamentos por Status:
             value=self.config['backup_automatico'],
         )
         
-        # Dias para manter backups
+        # Dias para manter backups - responsivo
         self.backup_dias_field = ft.TextField(
             label="Manter backups dos últimos (dias)",
             value=str(self.config['backup_dias']),
-            width=200,
+            expand=True,
             keyboard_type=ft.KeyboardType.NUMBER,
         )
         
-        # Pasta de backup
+        # Pasta de backup - responsiva
         self.backup_pasta_field = ft.TextField(
             label="Pasta de Backup",
             value=self.config['backup_pasta'],
-            width=400,
+            expand=True,
         )
         
         # Status
@@ -2231,11 +2255,11 @@ Equipamentos por Status:
             value=self.config['tema'],
         )
         
-        # Usuário padrão
+        # Usuário padrão - responsivo
         self.usuario_padrao_field = ft.TextField(
             label="Nome do Usuário Padrão",
             value=self.config['usuario_padrao'],
-            width=400,
+            expand=True,
             hint_text="Ex: João Silva",
         )
         
@@ -2333,7 +2357,6 @@ Tecnologias:
             bgcolor=self.get_adaptive_color(ft.Colors.BLUE_GREY_800, ft.Colors.GREY_200),
             padding=20,
             border_radius=10,
-            width=500,
         )
         
         def verificar_sistema(e):

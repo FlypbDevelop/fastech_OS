@@ -275,11 +275,12 @@ STATUS.md:      Este arquivo
 ## 🔧 Manutenção
 
 ### Última Atualização
-- **Data**: 02/12/2024
-- **Versão**: 0.7.0
-- **Mudanças**: Adicionados botões de ação visíveis na aba Configurações
+- **Data**: 11/02/2026
+- **Versão**: 1.0.0
+- **Mudanças**: Migração completa para Flet, remoção de avisos de depreciação, melhorias de tema e contraste
 
 ### Histórico de Versões
+- **1.0.0** (11/02/2026): Migração completa para Flet, remoção de avisos de depreciação
 - **0.7.0** (02/12/2024): Botões de configuração, melhorias UX
 - **0.6.0** (02/12/2024): Sistema de temas claro/escuro
 - **0.5.0** (02/12/2024): Sistema de backup completo
@@ -329,5 +330,5 @@ python app.py
 
 ---
 
-**Última Atualização**: 02/12/2024  
+**Última Atualização**: 11/02/2026  
 **Próxima Revisão**: Após implementação da Etapa 8
