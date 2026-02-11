@@ -31,20 +31,28 @@ class ClientesTab(BaseTab):
         # Criar tabela
         self.criar_tabela()
         
-        # Layout
+        # Layout responsivo
         formulario = self.criar_formulario()
         lista = self.criar_lista()
         
         # Carregar clientes inicialmente
         self.carregar_clientes()
         
+        # Layout responsivo com ResponsiveRow
         return ft.Container(
-            content=ft.Row(
+            content=ft.ResponsiveRow(
                 [
-                    formulario,
-                    ft.Container(width=20),
-                    lista,
+                    ft.Container(
+                        content=formulario,
+                        col={"sm": 12, "md": 12, "lg": 5, "xl": 4},
+                    ),
+                    ft.Container(
+                        content=lista,
+                        col={"sm": 12, "md": 12, "lg": 7, "xl": 8},
+                    ),
                 ],
+                spacing=20,
+                run_spacing=20,
             ),
             padding=20,
             expand=True,
@@ -55,37 +63,37 @@ class ClientesTab(BaseTab):
         self.nome_field = ft.TextField(
             label="Nome Completo *",
             hint_text="Digite o nome do cliente",
-            width=400,
+            expand=True,
         )
         
         self.telefone_field = ft.TextField(
             label="Telefone *",
             hint_text="(11) 98765-4321",
-            width=400,
+            expand=True,
         )
         
         self.email_field = ft.TextField(
             label="Email",
             hint_text="cliente@email.com",
-            width=400,
+            expand=True,
         )
         
         self.documento_field = ft.TextField(
             label="CPF/CNPJ",
             hint_text="000.000.000-00",
-            width=400,
+            expand=True,
         )
         
         self.setor_field = ft.TextField(
             label="Setor/Departamento",
             hint_text="Ex: TI, RH, Vendas",
-            width=400,
+            expand=True,
         )
         
         self.endereco_field = ft.TextField(
             label="Endereço",
             hint_text="Rua, número, bairro, cidade",
-            width=400,
+            expand=True,
             multiline=True,
             min_lines=2,
             max_lines=3,
@@ -96,7 +104,7 @@ class ClientesTab(BaseTab):
         self.cliente_search = ft.TextField(
             label="Buscar cliente",
             hint_text="Nome, telefone ou documento...",
-            width=400,
+            expand=True,
             on_submit=lambda e: self.buscar_clientes(),
         )
     
@@ -128,19 +136,20 @@ class ClientesTab(BaseTab):
                     self.cliente_status,
                     ft.Row(
                         [
-                            ft.FilledButton("💾 Salvar", on_click=self.salvar_cliente),
-                            ft.FilledButton("🔄 Limpar", on_click=self.limpar_form),
+                            ft.FilledButton("💾 Salvar", on_click=self.salvar_cliente, expand=True),
+                            ft.FilledButton("🔄 Limpar", on_click=self.limpar_form, expand=True),
                         ],
                         spacing=10,
                     ),
                 ],
                 spacing=10,
                 scroll=ft.ScrollMode.AUTO,
+                expand=True,
             ),
-            width=450,
             padding=20,
             bgcolor=self.get_bg_color(),
             border_radius=10,
+            expand=True,
         )
     
     def criar_lista(self):
@@ -149,23 +158,36 @@ class ClientesTab(BaseTab):
             content=ft.Column(
                 [
                     ft.Text("Clientes Cadastrados", size=18, weight=ft.FontWeight.BOLD),
-                    ft.Row(
+                    ft.ResponsiveRow(
                         [
-                            self.cliente_search,
-                            ft.FilledButton("🔍 Buscar", on_click=lambda e: self.buscar_clientes()),
-                            ft.FilledButton("🔄 Todos", on_click=lambda e: self.carregar_clientes()),
+                            ft.Container(
+                                content=self.cliente_search,
+                                col={"sm": 12, "md": 6, "lg": 6},
+                            ),
+                            ft.Container(
+                                content=ft.Row(
+                                    [
+                                        ft.FilledButton("🔍 Buscar", on_click=lambda e: self.buscar_clientes(), expand=True),
+                                        ft.FilledButton("🔄 Todos", on_click=lambda e: self.carregar_clientes(), expand=True),
+                                    ],
+                                    spacing=10,
+                                ),
+                                col={"sm": 12, "md": 6, "lg": 6},
+                            ),
                         ],
                         spacing=10,
+                        run_spacing=10,
                     ),
                     ft.Container(
                         content=ft.Column(
                             [self.clientes_table],
                             scroll=ft.ScrollMode.AUTO,
                         ),
-                        height=500,
+                        expand=True,
                     ),
                 ],
                 spacing=10,
+                expand=True,
             ),
             expand=True,
             padding=20,

@@ -30,11 +30,11 @@ class DashboardTab(BaseTab):
         else:
             greeting = "Boa noite - Seja Bem vindo(a)"
         
-        # Header do dashboard
+        # Header do dashboard - responsivo
         dashboard_header = ft.Container(
             content=ft.Row(
                 [
-                    ft.Text(greeting, size=18, color=ft.Colors.GREY_500),
+                    ft.Text(greeting, size=18, color=ft.Colors.GREY_500, expand=True),
                     ft.Row(
                         [
                             ft.Container(
@@ -66,7 +66,7 @@ class DashboardTab(BaseTab):
                 ],
                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
             ),
-            padding=ft.Padding(left=40, right=40, top=30, bottom=20),
+            padding=20,
         )
         
         # Cards do dashboard
@@ -74,29 +74,43 @@ class DashboardTab(BaseTab):
         com_cliente = stats['por_status'].get('Com o Cliente', 0)
         em_manutencao = stats['por_status'].get('Em Manutenção', 0)
         
-        cards_row1 = ft.Row(
+        # Grid responsivo de cards
+        cards_grid = ft.ResponsiveRow(
             [
-                self.criar_card("EQUIPAMENTOS", "CADASTRADOS", str(stats['total_equipamentos']), "📦", ft.Colors.BLUE),
-                self.criar_card("MOVIMENTAÇÕES", "ESTE MÊS", str(self.contar_movimentacoes_mes()), "🔄", ft.Colors.AMBER),
-                self.criar_card("EM MANUTENÇÃO", "EQUIPAMENTOS", str(em_manutencao), "🔧", ft.Colors.ORANGE),
-                self.criar_card("SISTEMA", "STATUS", "OK", "✅", ft.Colors.GREEN),
+                ft.Container(
+                    content=self.criar_card("EQUIPAMENTOS", "CADASTRADOS", str(stats['total_equipamentos']), "📦", ft.Colors.BLUE),
+                    col={"sm": 12, "md": 6, "lg": 3},
+                ),
+                ft.Container(
+                    content=self.criar_card("MOVIMENTAÇÕES", "ESTE MÊS", str(self.contar_movimentacoes_mes()), "🔄", ft.Colors.AMBER),
+                    col={"sm": 12, "md": 6, "lg": 3},
+                ),
+                ft.Container(
+                    content=self.criar_card("EM MANUTENÇÃO", "EQUIPAMENTOS", str(em_manutencao), "�", ft.Colors.ORANGE),
+                    col={"sm": 12, "md": 6, "lg": 3},
+                ),
+                ft.Container(
+                    content=self.criar_card("SISTEMA", "STATUS", "OK", "✅", ft.Colors.GREEN),
+                    col={"sm": 12, "md": 6, "lg": 3},
+                ),
+                ft.Container(
+                    content=self.criar_card("CLIENTES", "CADASTRADOS", str(stats['total_clientes']), "�", ft.Colors.GREEN_700),
+                    col={"sm": 12, "md": 6, "lg": 3},
+                ),
+                ft.Container(
+                    content=self.criar_card("EM ESTOQUE", "DISPONÍVEIS", str(em_estoque), "📊", ft.Colors.BROWN),
+                    col={"sm": 12, "md": 6, "lg": 3},
+                ),
+                ft.Container(
+                    content=self.criar_card("COM CLIENTES", "EM USO", str(com_cliente), "📤", ft.Colors.INDIGO),
+                    col={"sm": 12, "md": 6, "lg": 3},
+                ),
+                ft.Container(
+                    content=self.criar_card("BANCO DE DADOS", self.get_db_size(), "💾", "💾", ft.Colors.AMBER_900),
+                    col={"sm": 12, "md": 6, "lg": 3},
+                ),
             ],
-            alignment=ft.MainAxisAlignment.CENTER,
             spacing=20,
-            wrap=True,
-            run_spacing=20,
-        )
-        
-        cards_row2 = ft.Row(
-            [
-                self.criar_card("CLIENTES", "CADASTRADOS", str(stats['total_clientes']), "👥", ft.Colors.GREEN_700),
-                self.criar_card("EM ESTOQUE", "DISPONÍVEIS", str(em_estoque), "📊", ft.Colors.BROWN),
-                self.criar_card("COM CLIENTES", "EM USO", str(com_cliente), "📤", ft.Colors.INDIGO),
-                self.criar_card("BANCO DE DADOS", self.get_db_size(), "💾", "💾", ft.Colors.AMBER_900),
-            ],
-            alignment=ft.MainAxisAlignment.CENTER,
-            spacing=20,
-            wrap=True,
             run_spacing=20,
         )
         
@@ -105,18 +119,17 @@ class DashboardTab(BaseTab):
                 [
                     dashboard_header,
                     ft.Container(height=20),
-                    cards_row1,
-                    ft.Container(height=20),
-                    cards_row2,
+                    cards_grid,
                 ],
                 scroll=ft.ScrollMode.AUTO,
+                expand=True,
             ),
-            padding=ft.Padding(left=40, right=40, bottom=30),
+            padding=20,
             expand=True,
         )
     
     def criar_card(self, title_line1, title_line2, value, icon, color):
-        """Cria um card do dashboard"""
+        """Cria um card do dashboard responsivo"""
         title_color = self.get_adaptive_color(ft.Colors.WHITE, ft.Colors.GREY_900)
         subtitle_color = self.get_adaptive_color(ft.Colors.GREY_300, ft.Colors.GREY_800)
         value_color = self.get_adaptive_color(ft.Colors.WHITE, ft.Colors.GREY_900)
@@ -150,8 +163,6 @@ class DashboardTab(BaseTab):
                 ],
                 spacing=5,
             ),
-            width=280,
-            height=150,
             padding=20,
             bgcolor=color + "20",
             border_radius=15,
@@ -161,4 +172,6 @@ class DashboardTab(BaseTab):
                 top=ft.BorderSide(3, color + "60"),
                 bottom=ft.BorderSide(3, color + "60"),
             ),
+            expand=True,
+            height=150,
         )
