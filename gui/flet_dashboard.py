@@ -1,6 +1,7 @@
 import flet as ft
 from datetime import datetime
 import random
+import asyncio
 
 
 class FletDashboard(ft.Container):
@@ -151,10 +152,6 @@ class FletDashboard(ft.Container):
         )
         
         return main_layout
-
-
-# Import asyncio for async functionality
-import asyncio
 
 
 def main(page: ft.Page):
