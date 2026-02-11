@@ -2,7 +2,7 @@
 Aba Clientes - Gestão de clientes
 """
 import flet as ft
-from gui.base_tab import BaseTab
+from gui.base import BaseTab
 
 
 class ClientesTab(BaseTab):

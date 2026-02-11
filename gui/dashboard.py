@@ -3,7 +3,7 @@ Aba Dashboard - Visão geral do sistema
 """
 import flet as ft
 from datetime import datetime
-from gui.base_tab import BaseTab
+from gui.base import BaseTab
 
 
 class DashboardTab(BaseTab):
