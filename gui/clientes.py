@@ -12,14 +12,21 @@ class ClientesTab(BaseTab):
     def __init__(self, page, db, config):
         super().__init__(page, db, config)
         self.cliente_selecionado = None
+        self.tipo_cliente_atual = "Cliente Final"
         
         # Campos do formulário
+        self.tipo_cliente_radio = None
         self.nome_field = None
         self.telefone_field = None
         self.email_field = None
         self.documento_field = None
         self.setor_field = None
         self.endereco_field = None
+        
+        # Campos específicos para Terceirizado
+        self.empresa_field = None
+        self.regiao_field = None
+        
         self.cliente_status = None
         self.clientes_table = None
         self.cliente_search = None
@@ -67,34 +74,49 @@ class ClientesTab(BaseTab):
     
     def criar_campos(self):
         """Cria os campos do formulário"""
+        # Seletor de tipo de cliente
+        self.tipo_cliente_radio = ft.RadioGroup(
+            content=ft.Row([
+                ft.Radio(value="Cliente Final", label="👤 Cliente Final"),
+                ft.Radio(value="Terceirizado", label="🏢 Terceirizado"),
+            ]),
+            value="Cliente Final",
+            on_change=self.on_tipo_cliente_change,
+        )
+        
+        # Campos comuns
         self.nome_field = ft.TextField(
             label="Nome Completo *",
-            hint_text="Digite o nome do cliente",
+            hint_text="Digite o nome",
             expand=True,
         )
         
         self.telefone_field = ft.TextField(
-            label="Telefone *",
+            label="Telefone/WhatsApp *",
             hint_text="(11) 98765-4321",
             expand=True,
         )
         
+        # Campos Cliente Final
         self.email_field = ft.TextField(
             label="Email",
             hint_text="cliente@email.com",
             expand=True,
+            visible=True,
         )
         
         self.documento_field = ft.TextField(
             label="CPF/CNPJ",
             hint_text="000.000.000-00",
             expand=True,
+            visible=True,
         )
         
         self.setor_field = ft.TextField(
             label="Setor/Departamento",
             hint_text="Ex: TI, RH, Vendas",
             expand=True,
+            visible=True,
         )
         
         self.endereco_field = ft.TextField(
@@ -104,6 +126,22 @@ class ClientesTab(BaseTab):
             multiline=True,
             min_lines=2,
             max_lines=3,
+            visible=True,
+        )
+        
+        # Campos Terceirizado
+        self.empresa_field = ft.TextField(
+            label="Empresa",
+            hint_text="Nome da empresa",
+            expand=True,
+            visible=False,
+        )
+        
+        self.regiao_field = ft.TextField(
+            label="Região",
+            hint_text="Ex: Zona Sul, Centro, etc",
+            expand=True,
+            visible=False,
         )
         
         self.cliente_status = ft.Text("", size=14)
@@ -120,13 +158,44 @@ class ClientesTab(BaseTab):
         self.clientes_table = ft.DataTable(
             columns=[
                 ft.DataColumn(ft.Text("ID", weight=ft.FontWeight.BOLD)),
+                ft.DataColumn(ft.Text("Tipo", weight=ft.FontWeight.BOLD)),
                 ft.DataColumn(ft.Text("Nome", weight=ft.FontWeight.BOLD)),
                 ft.DataColumn(ft.Text("Telefone", weight=ft.FontWeight.BOLD)),
-                ft.DataColumn(ft.Text("Setor", weight=ft.FontWeight.BOLD)),
+                ft.DataColumn(ft.Text("Info", weight=ft.FontWeight.BOLD)),
                 ft.DataColumn(ft.Text("Ações", weight=ft.FontWeight.BOLD)),
             ],
             rows=[],
         )
+    
+    def on_tipo_cliente_change(self, e):
+        """Chamado quando o tipo de cliente muda"""
+        tipo = self.tipo_cliente_radio.value
+        self.tipo_cliente_atual = tipo
+        
+        if tipo == "Terceirizado":
+            # Mostrar campos de Terceirizado
+            self.empresa_field.visible = True
+            self.regiao_field.visible = True
+            self.telefone_field.label = "WhatsApp *"
+            
+            # Ocultar campos de Cliente Final
+            self.email_field.visible = False
+            self.documento_field.visible = False
+            self.setor_field.visible = False
+            self.endereco_field.visible = False
+        else:
+            # Mostrar campos de Cliente Final
+            self.email_field.visible = True
+            self.documento_field.visible = True
+            self.setor_field.visible = True
+            self.endereco_field.visible = True
+            self.telefone_field.label = "Telefone *"
+            
+            # Ocultar campos de Terceirizado
+            self.empresa_field.visible = False
+            self.regiao_field.visible = False
+        
+        self.page.update()
     
     def criar_formulario(self):
         """Cria o formulário de cadastro"""
@@ -134,16 +203,23 @@ class ClientesTab(BaseTab):
             content=ft.Column(
                 [
                     ft.Text("Cadastro de Cliente", size=18, weight=ft.FontWeight.BOLD),
+                    ft.Text("Tipo de Cliente", size=14, weight=ft.FontWeight.BOLD),
+                    self.tipo_cliente_radio,
+                    ft.Divider(),
                     self.nome_field,
                     self.telefone_field,
+                    # Campos Cliente Final
                     self.email_field,
                     self.documento_field,
                     self.setor_field,
                     self.endereco_field,
+                    # Campos Terceirizado
+                    self.empresa_field,
+                    self.regiao_field,
                     self.cliente_status,
                     ft.Row(
                         [
-                            ft.FilledButton("💾 Salvar", on_click=self.salvar_cliente, expand=True),
+                            ft.FilledButton("💾 Salvar", on_click=self.confirmar_salvar_cliente, expand=True),
                             ft.FilledButton("🔄 Limpar", on_click=self.limpar_form, expand=True),
                         ],
                         spacing=10,
@@ -196,67 +272,162 @@ class ClientesTab(BaseTab):
             border_radius=10,
         )
     
+    def confirmar_salvar_cliente(self, e):
+        """Mostra confirmação antes de salvar"""
+        nome = self.nome_field.value
+        tipo = self.tipo_cliente_radio.value
+        
+        if not nome:
+            self.cliente_status.value = "❌ Nome é obrigatório"
+            self.cliente_status.color = ft.Colors.RED
+            self.page.update()
+            return
+        
+        # Mensagem de confirmação
+        if self.cliente_selecionado:
+            mensagem = f"Deseja atualizar o cliente '{nome}'?"
+            titulo = "Confirmar Atualização"
+        else:
+            mensagem = f"Deseja cadastrar o cliente '{nome}' como {tipo}?"
+            titulo = "Confirmar Cadastro"
+        
+        def confirmar(ev):
+            dialogo.open = False
+            self.page.update()
+            self.salvar_cliente(e)
+        
+        def cancelar(ev):
+            dialogo.open = False
+            self.page.update()
+        
+        dialogo = ft.AlertDialog(
+            title=ft.Text(titulo),
+            content=ft.Text(mensagem),
+            actions=[
+                ft.TextButton("Cancelar", on_click=cancelar),
+                ft.FilledButton("Confirmar", on_click=confirmar),
+            ],
+        )
+        
+        self.page.dialog = dialogo
+        dialogo.open = True
+        self.page.update()
+    
     def salvar_cliente(self, e):
         """Salva ou atualiza um cliente"""
         nome = self.nome_field.value
         telefone = self.telefone_field.value
-        email = self.email_field.value
-        documento = self.documento_field.value
+        tipo_cliente = self.tipo_cliente_radio.value
         
-        # Validações
-        if not nome or not telefone:
-            self.cliente_status.value = "❌ Nome e telefone são obrigatórios"
-            self.cliente_status.color = ft.Colors.RED
-            self.page.update()
-            return
-        
-        # Validar telefone
-        tel_valido, tel_msg = validar_telefone(telefone)
-        if not tel_valido:
-            self.cliente_status.value = f"❌ {tel_msg}"
-            self.cliente_status.color = ft.Colors.RED
-            self.page.update()
-            return
-        
-        # Validar email (se preenchido)
-        if email:
-            email_valido, email_msg = validar_email(email)
-            if not email_valido:
-                self.cliente_status.value = f"❌ {email_msg}"
+        # Validações baseadas no tipo
+        if tipo_cliente == "Terceirizado":
+            # Terceirizado: Nome e WhatsApp obrigatórios
+            if not nome or not telefone:
+                self.cliente_status.value = "❌ Nome e WhatsApp são obrigatórios"
                 self.cliente_status.color = ft.Colors.RED
                 self.page.update()
                 return
-        
-        # Validar documento (se preenchido)
-        if documento:
-            doc_valido, doc_msg = validar_documento(documento)
-            if not doc_valido:
-                self.cliente_status.value = f"❌ {doc_msg}"
+            
+            # Validar WhatsApp
+            tel_valido, tel_msg = validar_telefone(telefone)
+            if not tel_valido:
+                self.cliente_status.value = f"❌ {tel_msg}"
                 self.cliente_status.color = ft.Colors.RED
                 self.page.update()
                 return
+            
+            # Dados do Terceirizado
+            empresa = self.empresa_field.value
+            regiao = self.regiao_field.value
+            
+        else:
+            # Cliente Final: Nome e Telefone obrigatórios
+            if not nome or not telefone:
+                self.cliente_status.value = "❌ Nome e Telefone são obrigatórios"
+                self.cliente_status.color = ft.Colors.RED
+                self.page.update()
+                return
+            
+            # Validar telefone
+            tel_valido, tel_msg = validar_telefone(telefone)
+            if not tel_valido:
+                self.cliente_status.value = f"❌ {tel_msg}"
+                self.cliente_status.color = ft.Colors.RED
+                self.page.update()
+                return
+            
+            # Validar email (se preenchido)
+            email = self.email_field.value
+            if email:
+                email_valido, email_msg = validar_email(email)
+                if not email_valido:
+                    self.cliente_status.value = f"❌ {email_msg}"
+                    self.cliente_status.color = ft.Colors.RED
+                    self.page.update()
+                    return
+            
+            # Validar documento (se preenchido)
+            documento = self.documento_field.value
+            if documento:
+                doc_valido, doc_msg = validar_documento(documento)
+                if not doc_valido:
+                    self.cliente_status.value = f"❌ {doc_msg}"
+                    self.cliente_status.color = ft.Colors.RED
+                    self.page.update()
+                    return
         
         try:
             if self.cliente_selecionado:
-                self.db.atualizar_cliente(
-                    self.cliente_selecionado['id'],
-                    nome=nome,
-                    telefone=telefone,
-                    email=email or None,
-                    documento=documento or None,
-                    setor=self.setor_field.value or None,
-                    endereco=self.endereco_field.value or None,
-                )
+                # Atualizar cliente existente
+                if tipo_cliente == "Terceirizado":
+                    self.db.atualizar_cliente(
+                        self.cliente_selecionado['id'],
+                        tipo_cliente=tipo_cliente,
+                        nome=nome,
+                        telefone=telefone,
+                        setor=self.empresa_field.value or None,  # Usar setor para empresa
+                        regiao=self.regiao_field.value or None,
+                        email=None,
+                        documento=None,
+                        endereco=None,
+                    )
+                else:
+                    self.db.atualizar_cliente(
+                        self.cliente_selecionado['id'],
+                        tipo_cliente=tipo_cliente,
+                        nome=nome,
+                        telefone=telefone,
+                        email=self.email_field.value or None,
+                        documento=self.documento_field.value or None,
+                        setor=self.setor_field.value or None,
+                        endereco=self.endereco_field.value or None,
+                        regiao=None,
+                    )
                 self.cliente_status.value = f"✅ Cliente '{nome}' atualizado!"
             else:
-                self.db.inserir_cliente(
-                    nome,
-                    telefone,
-                    email or None,
-                    self.endereco_field.value or None,
-                    documento or None,
-                    self.setor_field.value or None,
-                )
+                # Inserir novo cliente
+                if tipo_cliente == "Terceirizado":
+                    self.db.inserir_cliente(
+                        nome,
+                        telefone,
+                        email=None,
+                        endereco=None,
+                        documento=None,
+                        setor=self.empresa_field.value or None,  # Usar setor para empresa
+                        tipo_cliente=tipo_cliente,
+                        regiao=self.regiao_field.value or None,
+                    )
+                else:
+                    self.db.inserir_cliente(
+                        nome,
+                        telefone,
+                        self.email_field.value or None,
+                        self.endereco_field.value or None,
+                        self.documento_field.value or None,
+                        self.setor_field.value or None,
+                        tipo_cliente,
+                        None,
+                    )
                 self.cliente_status.value = f"✅ Cliente '{nome}' cadastrado!"
             
             self.cliente_status.color = ft.Colors.GREEN
@@ -281,8 +452,15 @@ class ClientesTab(BaseTab):
         self.documento_field.value = ""
         self.setor_field.value = ""
         self.endereco_field.value = ""
+        self.empresa_field.value = ""
+        self.regiao_field.value = ""
+        self.tipo_cliente_radio.value = "Cliente Final"
+        self.tipo_cliente_atual = "Cliente Final"
         self.cliente_selecionado = None
         self.cliente_status.value = ""
+        
+        # Resetar visibilidade dos campos
+        self.on_tipo_cliente_change(None)
     
     def carregar_clientes(self):
         """Carrega todos os clientes na tabela"""
@@ -290,40 +468,83 @@ class ClientesTab(BaseTab):
         self.clientes_table.rows.clear()
         
         for c in clientes:
-            def editar_cliente(e, cliente=c):
-                self.cliente_selecionado = cliente
-                self.nome_field.value = cliente['nome']
-                self.telefone_field.value = cliente['telefone']
-                self.email_field.value = cliente['email'] or ""
-                self.documento_field.value = cliente['documento'] or ""
-                self.setor_field.value = cliente['setor'] or ""
-                self.endereco_field.value = cliente['endereco'] or ""
-                self.cliente_status.value = f"✏️ Editando: {cliente['nome']}"
-                self.cliente_status.color = ft.Colors.BLUE
+            def confirmar_editar_cliente(e, cliente=c):
+                """Mostra confirmação antes de editar"""
+                def confirmar(ev):
+                    dialogo.open = False
+                    self.page.update()
+                    self.editar_cliente(cliente)
+                
+                def cancelar(ev):
+                    dialogo.open = False
+                    self.page.update()
+                
+                dialogo = ft.AlertDialog(
+                    title=ft.Text("Confirmar Edição"),
+                    content=ft.Text(f"Deseja editar o cliente '{cliente['nome']}'?"),
+                    actions=[
+                        ft.TextButton("Cancelar", on_click=cancelar),
+                        ft.FilledButton("Confirmar", on_click=confirmar),
+                    ],
+                )
+                
+                self.page.dialog = dialogo
+                dialogo.open = True
                 self.page.update()
             
-            def excluir_cliente(e, cliente=c):
-                if self.db.deletar_cliente(cliente['id']):
-                    self.cliente_status.value = f"✅ Cliente '{cliente['nome']}' excluído!"
-                    self.cliente_status.color = ft.Colors.GREEN
-                else:
-                    self.cliente_status.value = "❌ Cliente possui equipamentos vinculados"
-                    self.cliente_status.color = ft.Colors.RED
-                self.carregar_clientes()
+            def confirmar_excluir_cliente(e, cliente=c):
+                """Mostra confirmação antes de excluir"""
+                def confirmar(ev):
+                    dialogo.open = False
+                    self.page.update()
+                    if self.db.deletar_cliente(cliente['id']):
+                        self.cliente_status.value = f"✅ Cliente '{cliente['nome']}' excluído!"
+                        self.cliente_status.color = ft.Colors.GREEN
+                    else:
+                        self.cliente_status.value = "❌ Cliente possui equipamentos vinculados"
+                        self.cliente_status.color = ft.Colors.RED
+                    self.carregar_clientes()
+                    self.page.update()
+                
+                def cancelar(ev):
+                    dialogo.open = False
+                    self.page.update()
+                
+                dialogo = ft.AlertDialog(
+                    title=ft.Text("⚠️ Confirmar Exclusão"),
+                    content=ft.Text(f"Tem certeza que deseja excluir o cliente '{cliente['nome']}'?\n\nEsta ação não pode ser desfeita."),
+                    actions=[
+                        ft.TextButton("Cancelar", on_click=cancelar),
+                        ft.FilledButton("Excluir", on_click=confirmar, style=ft.ButtonStyle(bgcolor=ft.Colors.RED)),
+                    ],
+                )
+                
+                self.page.dialog = dialogo
+                dialogo.open = True
                 self.page.update()
+            
+            # Determinar ícone e info baseado no tipo
+            tipo = c.get('tipo_cliente', 'Cliente Final')
+            if tipo == "Terceirizado":
+                tipo_icon = "🏢"
+                info_extra = c.get('regiao', '-')
+            else:
+                tipo_icon = "👤"
+                info_extra = c.get('setor', '-')
             
             self.clientes_table.rows.append(
                 ft.DataRow(
                     cells=[
                         ft.DataCell(ft.Text(str(c['id']))),
+                        ft.DataCell(ft.Text(f"{tipo_icon} {tipo}", size=12)),
                         ft.DataCell(ft.Text(c['nome'])),
                         ft.DataCell(ft.Text(c['telefone'])),
-                        ft.DataCell(ft.Text(c['setor'] or '-')),
+                        ft.DataCell(ft.Text(info_extra)),
                         ft.DataCell(
                             ft.Row(
                                 [
-                                    ft.TextButton("✏️", on_click=editar_cliente, tooltip="Editar"),
-                                    ft.TextButton("🗑️", on_click=excluir_cliente, tooltip="Excluir"),
+                                    ft.TextButton("✏️", on_click=confirmar_editar_cliente, tooltip="Editar"),
+                                    ft.TextButton("🗑️", on_click=confirmar_excluir_cliente, tooltip="Excluir"),
                                 ],
                                 spacing=5,
                             )
@@ -335,6 +556,37 @@ class ClientesTab(BaseTab):
         if hasattr(self, 'page'):
             self.page.update()
     
+    def editar_cliente(self, cliente):
+        """Carrega dados do cliente para edição"""
+        self.cliente_selecionado = cliente
+        tipo = cliente.get('tipo_cliente', 'Cliente Final')
+        
+        # Definir tipo
+        self.tipo_cliente_radio.value = tipo
+        self.tipo_cliente_atual = tipo
+        
+        # Campos comuns
+        self.nome_field.value = cliente['nome']
+        self.telefone_field.value = cliente['telefone']
+        
+        if tipo == "Terceirizado":
+            # Carregar campos de Terceirizado
+            self.empresa_field.value = cliente.get('setor', '') or ''
+            self.regiao_field.value = cliente.get('regiao', '') or ''
+        else:
+            # Carregar campos de Cliente Final
+            self.email_field.value = cliente.get('email', '') or ''
+            self.documento_field.value = cliente.get('documento', '') or ''
+            self.setor_field.value = cliente.get('setor', '') or ''
+            self.endereco_field.value = cliente.get('endereco', '') or ''
+        
+        # Atualizar visibilidade dos campos
+        self.on_tipo_cliente_change(None)
+        
+        self.cliente_status.value = f"✏️ Editando: {cliente['nome']}"
+        self.cliente_status.color = ft.Colors.BLUE
+        self.page.update()
+    
     def buscar_clientes(self):
         """Busca clientes pelo termo"""
         termo = self.cliente_search.value or ""
@@ -342,40 +594,83 @@ class ClientesTab(BaseTab):
         self.clientes_table.rows.clear()
         
         for c in clientes:
-            def editar_cliente(e, cliente=c):
-                self.cliente_selecionado = cliente
-                self.nome_field.value = cliente['nome']
-                self.telefone_field.value = cliente['telefone']
-                self.email_field.value = cliente['email'] or ""
-                self.documento_field.value = cliente['documento'] or ""
-                self.setor_field.value = cliente['setor'] or ""
-                self.endereco_field.value = cliente['endereco'] or ""
-                self.cliente_status.value = f"✏️ Editando: {cliente['nome']}"
-                self.cliente_status.color = ft.Colors.BLUE
+            def confirmar_editar_cliente(e, cliente=c):
+                """Mostra confirmação antes de editar"""
+                def confirmar(ev):
+                    dialogo.open = False
+                    self.page.update()
+                    self.editar_cliente(cliente)
+                
+                def cancelar(ev):
+                    dialogo.open = False
+                    self.page.update()
+                
+                dialogo = ft.AlertDialog(
+                    title=ft.Text("Confirmar Edição"),
+                    content=ft.Text(f"Deseja editar o cliente '{cliente['nome']}'?"),
+                    actions=[
+                        ft.TextButton("Cancelar", on_click=cancelar),
+                        ft.FilledButton("Confirmar", on_click=confirmar),
+                    ],
+                )
+                
+                self.page.dialog = dialogo
+                dialogo.open = True
                 self.page.update()
             
-            def excluir_cliente(e, cliente=c):
-                if self.db.deletar_cliente(cliente['id']):
-                    self.cliente_status.value = f"✅ Cliente '{cliente['nome']}' excluído!"
-                    self.cliente_status.color = ft.Colors.GREEN
-                else:
-                    self.cliente_status.value = "❌ Cliente possui equipamentos vinculados"
-                    self.cliente_status.color = ft.Colors.RED
-                self.buscar_clientes()
+            def confirmar_excluir_cliente(e, cliente=c):
+                """Mostra confirmação antes de excluir"""
+                def confirmar(ev):
+                    dialogo.open = False
+                    self.page.update()
+                    if self.db.deletar_cliente(cliente['id']):
+                        self.cliente_status.value = f"✅ Cliente '{cliente['nome']}' excluído!"
+                        self.cliente_status.color = ft.Colors.GREEN
+                    else:
+                        self.cliente_status.value = "❌ Cliente possui equipamentos vinculados"
+                        self.cliente_status.color = ft.Colors.RED
+                    self.buscar_clientes()
+                    self.page.update()
+                
+                def cancelar(ev):
+                    dialogo.open = False
+                    self.page.update()
+                
+                dialogo = ft.AlertDialog(
+                    title=ft.Text("⚠️ Confirmar Exclusão"),
+                    content=ft.Text(f"Tem certeza que deseja excluir o cliente '{cliente['nome']}'?\n\nEsta ação não pode ser desfeita."),
+                    actions=[
+                        ft.TextButton("Cancelar", on_click=cancelar),
+                        ft.FilledButton("Excluir", on_click=confirmar, style=ft.ButtonStyle(bgcolor=ft.Colors.RED)),
+                    ],
+                )
+                
+                self.page.dialog = dialogo
+                dialogo.open = True
                 self.page.update()
+            
+            # Determinar ícone e info baseado no tipo
+            tipo = c.get('tipo_cliente', 'Cliente Final')
+            if tipo == "Terceirizado":
+                tipo_icon = "🏢"
+                info_extra = c.get('regiao', '-')
+            else:
+                tipo_icon = "👤"
+                info_extra = c.get('setor', '-')
             
             self.clientes_table.rows.append(
                 ft.DataRow(
                     cells=[
                         ft.DataCell(ft.Text(str(c['id']))),
+                        ft.DataCell(ft.Text(f"{tipo_icon} {tipo}", size=12)),
                         ft.DataCell(ft.Text(c['nome'])),
                         ft.DataCell(ft.Text(c['telefone'])),
-                        ft.DataCell(ft.Text(c['setor'] or '-')),
+                        ft.DataCell(ft.Text(info_extra)),
                         ft.DataCell(
                             ft.Row(
                                 [
-                                    ft.TextButton("✏️", on_click=editar_cliente, tooltip="Editar"),
-                                    ft.TextButton("🗑️", on_click=excluir_cliente, tooltip="Excluir"),
+                                    ft.TextButton("✏️", on_click=confirmar_editar_cliente, tooltip="Editar"),
+                                    ft.TextButton("🗑️", on_click=confirmar_excluir_cliente, tooltip="Excluir"),
                                 ],
                                 spacing=5,
                             )

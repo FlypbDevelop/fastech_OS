@@ -31,17 +31,32 @@ class Database:
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS clientes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tipo_cliente TEXT DEFAULT 'Cliente Final',
                 nome TEXT NOT NULL,
                 telefone TEXT UNIQUE NOT NULL,
                 email TEXT,
                 endereco TEXT,
                 documento TEXT UNIQUE,
                 setor TEXT,
+                regiao TEXT,
                 data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
         
-        # Tabela de equipamentos
+        # Adicionar colunas se não existirem (migração)
+        try:
+            self.cursor.execute("ALTER TABLE clientes ADD COLUMN tipo_cliente TEXT DEFAULT 'Cliente Final'")
+            self.conn.commit()
+        except:
+            pass  # Coluna já existe
+        
+        try:
+            self.cursor.execute("ALTER TABLE clientes ADD COLUMN regiao TEXT")
+            self.conn.commit()
+        except:
+            pass  # Coluna já existe
+        
+        # Equipamentos e histórico permanecem iguais
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS equipamentos (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -83,13 +98,14 @@ class Database:
     # ==================== OPERAÇÕES DE CLIENTES ====================
     
     def inserir_cliente(self, nome: str, telefone: str, email: str = None, 
-                       endereco: str = None, documento: str = None, setor: str = None) -> int:
+                       endereco: str = None, documento: str = None, setor: str = None,
+                       tipo_cliente: str = "Cliente Final", regiao: str = None) -> int:
         """Insere um novo cliente no banco de dados"""
         try:
             self.cursor.execute("""
-                INSERT INTO clientes (nome, telefone, email, endereco, documento, setor)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (nome, telefone, email, endereco, documento, setor))
+                INSERT INTO clientes (tipo_cliente, nome, telefone, email, endereco, documento, setor, regiao)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (tipo_cliente, nome, telefone, email, endereco, documento, setor, regiao))
             self.conn.commit()
             return self.cursor.lastrowid
         except sqlite3.IntegrityError as e:
@@ -114,7 +130,7 @@ class Database:
     def atualizar_cliente(self, cliente_id: int, **kwargs) -> bool:
         """Atualiza dados de um cliente"""
         # Validar campos permitidos para evitar SQL injection
-        campos_permitidos = {'nome', 'telefone', 'email', 'endereco', 'documento', 'setor'}
+        campos_permitidos = {'tipo_cliente', 'nome', 'telefone', 'email', 'endereco', 'documento', 'setor', 'regiao'}
         campos_atualizar = {k: v for k, v in kwargs.items() if k in campos_permitidos}
         
         if not campos_atualizar:
