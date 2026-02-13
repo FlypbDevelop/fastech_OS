@@ -41,13 +41,27 @@ class EquipamentosTab(BaseTab):
         # Carregar equipamentos inicialmente
         self.carregar_equipamentos()
         
+        # Layout responsivo com scroll
         return ft.Container(
-            content=ft.Row(
+            content=ft.Column(
                 [
-                    formulario,
-                    ft.Container(width=20),
-                    lista,
+                    ft.ResponsiveRow(
+                        [
+                            ft.Container(
+                                content=formulario,
+                                col={"sm": 12, "md": 12, "lg": 5, "xl": 4},
+                            ),
+                            ft.Container(
+                                content=lista,
+                                col={"sm": 12, "md": 12, "lg": 7, "xl": 8},
+                            ),
+                        ],
+                        spacing=20,
+                        run_spacing=20,
+                    ),
                 ],
+                scroll=ft.ScrollMode.AUTO,
+                expand=True,
             ),
             padding=20,
             expand=True,
@@ -58,13 +72,13 @@ class EquipamentosTab(BaseTab):
         self.numero_serie_field = ft.TextField(
             label="Número de Série *",
             hint_text="Ex: NB-2024-001",
-            width=400,
+            expand=True,
         )
         
         self.tipo_dropdown = ft.Dropdown(
             label="Tipo de Equipamento *",
             hint_text="Selecione o tipo",
-            width=400,
+            expand=True,
             options=[
                 ft.dropdown.Option("Notebook"),
                 ft.dropdown.Option("Desktop"),
@@ -80,18 +94,18 @@ class EquipamentosTab(BaseTab):
         self.marca_field = ft.TextField(
             label="Marca",
             hint_text="Ex: Dell, HP, Samsung",
-            width=190,
+            expand=True,
         )
         
         self.modelo_field = ft.TextField(
             label="Modelo",
             hint_text="Ex: Latitude 5420",
-            width=190,
+            expand=True,
         )
         
         self.status_dropdown = ft.Dropdown(
             label="Status",
-            width=400,
+            expand=True,
             value="Em Estoque",
             options=[
                 ft.dropdown.Option("Em Estoque"),
@@ -104,19 +118,19 @@ class EquipamentosTab(BaseTab):
         self.valor_field = ft.TextField(
             label="Valor Estimado (R$)",
             hint_text="0.00",
-            width=190,
+            expand=True,
         )
         
         self.garantia_field = ft.TextField(
             label="Data Garantia",
             hint_text="AAAA-MM-DD",
-            width=190,
+            expand=True,
         )
         
         self.obs_field = ft.TextField(
             label="Observações",
             hint_text="Informações adicionais",
-            width=400,
+            expand=True,
             multiline=True,
             min_lines=3,
             max_lines=5,
@@ -127,13 +141,13 @@ class EquipamentosTab(BaseTab):
         self.equipamento_search = ft.TextField(
             label="Buscar equipamento",
             hint_text="Número de série, tipo ou marca...",
-            width=300,
+            expand=True,
             on_submit=lambda e: self.buscar_equipamentos(),
         )
         
         self.status_filter = ft.Dropdown(
             label="Filtrar por status",
-            width=200,
+            expand=True,
             value="Todos",
             options=[
                 ft.dropdown.Option("Todos"),
@@ -174,16 +188,14 @@ class EquipamentosTab(BaseTab):
                     self.equipamento_status,
                     ft.Row(
                         [
-                            ft.FilledButton("💾 Salvar", on_click=self.salvar_equipamento),
-                            ft.FilledButton("🔄 Limpar", on_click=self.limpar_form),
+                            ft.FilledButton("💾 Salvar", on_click=self.salvar_equipamento, expand=True),
+                            ft.FilledButton("🔄 Limpar", on_click=self.limpar_form, expand=True),
                         ],
                         spacing=10,
                     ),
                 ],
                 spacing=10,
-                scroll=ft.ScrollMode.AUTO,
             ),
-            width=450,
             padding=20,
             bgcolor=self.get_bg_color(),
             border_radius=10,
@@ -195,26 +207,39 @@ class EquipamentosTab(BaseTab):
             content=ft.Column(
                 [
                     ft.Text("Equipamentos Cadastrados", size=18, weight=ft.FontWeight.BOLD),
-                    ft.Row(
+                    ft.ResponsiveRow(
                         [
-                            self.equipamento_search,
-                            self.status_filter,
-                            ft.FilledButton("🔍 Buscar", on_click=lambda e: self.buscar_equipamentos()),
-                            ft.FilledButton("🔄 Todos", on_click=lambda e: self.carregar_equipamentos()),
+                            ft.Container(
+                                content=self.equipamento_search,
+                                col={"sm": 12, "md": 4, "lg": 4},
+                            ),
+                            ft.Container(
+                                content=self.status_filter,
+                                col={"sm": 12, "md": 3, "lg": 3},
+                            ),
+                            ft.Container(
+                                content=ft.Row(
+                                    [
+                                        ft.FilledButton("🔍 Buscar", on_click=lambda e: self.buscar_equipamentos(), expand=True),
+                                        ft.FilledButton("🔄 Todos", on_click=lambda e: self.carregar_equipamentos(), expand=True),
+                                    ],
+                                    spacing=10,
+                                ),
+                                col={"sm": 12, "md": 5, "lg": 5},
+                            ),
                         ],
                         spacing=10,
+                        run_spacing=10,
                     ),
                     ft.Container(
                         content=ft.Column(
                             [self.equipamentos_table],
                             scroll=ft.ScrollMode.AUTO,
                         ),
-                        height=500,
                     ),
                 ],
                 spacing=10,
             ),
-            expand=True,
             padding=20,
             bgcolor=self.get_bg_color(),
             border_radius=10,

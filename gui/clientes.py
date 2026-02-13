@@ -3,6 +3,7 @@ Aba Clientes - Gestão de clientes
 """
 import flet as ft
 from gui.base import BaseTab
+from utils.validators import validar_telefone, validar_email, validar_documento
 
 
 class ClientesTab(BaseTab):
@@ -38,21 +39,27 @@ class ClientesTab(BaseTab):
         # Carregar clientes inicialmente
         self.carregar_clientes()
         
-        # Layout responsivo com ResponsiveRow
+        # Layout responsivo com ResponsiveRow e scroll
         return ft.Container(
-            content=ft.ResponsiveRow(
+            content=ft.Column(
                 [
-                    ft.Container(
-                        content=formulario,
-                        col={"sm": 12, "md": 12, "lg": 5, "xl": 4},
-                    ),
-                    ft.Container(
-                        content=lista,
-                        col={"sm": 12, "md": 12, "lg": 7, "xl": 8},
+                    ft.ResponsiveRow(
+                        [
+                            ft.Container(
+                                content=formulario,
+                                col={"sm": 12, "md": 12, "lg": 5, "xl": 4},
+                            ),
+                            ft.Container(
+                                content=lista,
+                                col={"sm": 12, "md": 12, "lg": 7, "xl": 8},
+                            ),
+                        ],
+                        spacing=20,
+                        run_spacing=20,
                     ),
                 ],
-                spacing=20,
-                run_spacing=20,
+                scroll=ft.ScrollMode.AUTO,
+                expand=True,
             ),
             padding=20,
             expand=True,
@@ -143,13 +150,10 @@ class ClientesTab(BaseTab):
                     ),
                 ],
                 spacing=10,
-                scroll=ft.ScrollMode.AUTO,
-                expand=True,
             ),
             padding=20,
             bgcolor=self.get_bg_color(),
             border_radius=10,
-            expand=True,
         )
     
     def criar_lista(self):
@@ -183,13 +187,10 @@ class ClientesTab(BaseTab):
                             [self.clientes_table],
                             scroll=ft.ScrollMode.AUTO,
                         ),
-                        expand=True,
                     ),
                 ],
                 spacing=10,
-                expand=True,
             ),
-            expand=True,
             padding=20,
             bgcolor=self.get_bg_color(),
             border_radius=10,
@@ -199,12 +200,41 @@ class ClientesTab(BaseTab):
         """Salva ou atualiza um cliente"""
         nome = self.nome_field.value
         telefone = self.telefone_field.value
+        email = self.email_field.value
+        documento = self.documento_field.value
         
+        # Validações
         if not nome or not telefone:
             self.cliente_status.value = "❌ Nome e telefone são obrigatórios"
             self.cliente_status.color = ft.Colors.RED
             self.page.update()
             return
+        
+        # Validar telefone
+        tel_valido, tel_msg = validar_telefone(telefone)
+        if not tel_valido:
+            self.cliente_status.value = f"❌ {tel_msg}"
+            self.cliente_status.color = ft.Colors.RED
+            self.page.update()
+            return
+        
+        # Validar email (se preenchido)
+        if email:
+            email_valido, email_msg = validar_email(email)
+            if not email_valido:
+                self.cliente_status.value = f"❌ {email_msg}"
+                self.cliente_status.color = ft.Colors.RED
+                self.page.update()
+                return
+        
+        # Validar documento (se preenchido)
+        if documento:
+            doc_valido, doc_msg = validar_documento(documento)
+            if not doc_valido:
+                self.cliente_status.value = f"❌ {doc_msg}"
+                self.cliente_status.color = ft.Colors.RED
+                self.page.update()
+                return
         
         try:
             if self.cliente_selecionado:
@@ -212,8 +242,8 @@ class ClientesTab(BaseTab):
                     self.cliente_selecionado['id'],
                     nome=nome,
                     telefone=telefone,
-                    email=self.email_field.value or None,
-                    documento=self.documento_field.value or None,
+                    email=email or None,
+                    documento=documento or None,
                     setor=self.setor_field.value or None,
                     endereco=self.endereco_field.value or None,
                 )
@@ -222,9 +252,9 @@ class ClientesTab(BaseTab):
                 self.db.inserir_cliente(
                     nome,
                     telefone,
-                    self.email_field.value or None,
+                    email or None,
                     self.endereco_field.value or None,
-                    self.documento_field.value or None,
+                    documento or None,
                     self.setor_field.value or None,
                 )
                 self.cliente_status.value = f"✅ Cliente '{nome}' cadastrado!"

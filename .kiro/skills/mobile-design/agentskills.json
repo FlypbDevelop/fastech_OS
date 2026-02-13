@@ -1,0 +1,24 @@
+{
+  "agentskills": "1.0.0",
+  "skill": {
+    "name": "mobile-design",
+    "description": "Mobile-first design thinking and decision-making for iOS and Android apps. Touch interaction, performance patterns, platform conventions. Use when building React Native, Flutter, or native mobile apps.",
+    "license": "MIT",
+    "compatibility": "Requires Python 3.8+ for audit scripts, supports iOS/Android development environments",
+    "metadata": {
+      "author": "OpenCode",
+      "version": "1.0.0",
+      "tags": ["mobile", "ios", "android", "react-native", "flutter", "ui", "ux", "performance"]
+    },
+    "runtime": {
+      "scripts": {
+        "mobile_audit": "scripts/mobile_audit.py"
+      }
+    },
+    "activation": {
+      "keywords": ["mobile", "ios", "android", "react native", "flutter", "mobile design", "mobile ux", "mobile performance", "touch", "mobile app"],
+      "file_patterns": ["**/*.tsx", "**/*.ts", "**/*.dart", "**/*.swift", "**/*.kt"],
+      "description_match": "mobile app|ios app|android app|react native|flutter|mobile design|mobile ux"
+    }
+  }
+}

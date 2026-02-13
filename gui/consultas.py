@@ -71,7 +71,7 @@ class ConsultasTab(BaseTab):
         self.equip_search_field = ft.TextField(
             label="Número de Série",
             hint_text="Digite o número de série...",
-            width=400,
+            expand=True,
             on_submit=lambda e: self.buscar_equipamento_consulta(),
         )
         

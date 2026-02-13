@@ -42,13 +42,27 @@ class MovimentacoesTab(BaseTab):
         self.carregar_clientes_mov()
         self.carregar_movimentacoes()
         
+        # Layout responsivo com scroll
         return ft.Container(
-            content=ft.Row(
+            content=ft.Column(
                 [
-                    formulario,
-                    ft.Container(width=20),
-                    lista,
+                    ft.ResponsiveRow(
+                        [
+                            ft.Container(
+                                content=formulario,
+                                col={"sm": 12, "md": 12, "lg": 5, "xl": 4},
+                            ),
+                            ft.Container(
+                                content=lista,
+                                col={"sm": 12, "md": 12, "lg": 7, "xl": 8},
+                            ),
+                        ],
+                        spacing=20,
+                        run_spacing=20,
+                    ),
                 ],
+                scroll=ft.ScrollMode.AUTO,
+                expand=True,
             ),
             padding=20,
             expand=True,
@@ -59,7 +73,7 @@ class MovimentacoesTab(BaseTab):
         self.acao_dropdown = ft.Dropdown(
             label="Tipo de Movimentação *",
             hint_text="Selecione o tipo",
-            width=400,
+            expand=True,
             options=[
                 ft.dropdown.Option("Cadastro"),
                 ft.dropdown.Option("Entrega"),
@@ -75,7 +89,7 @@ class MovimentacoesTab(BaseTab):
         self.equipamento_mov_dropdown = ft.Dropdown(
             label="Equipamento *",
             hint_text="Selecione o equipamento",
-            width=400,
+            expand=True,
             options=[],
         )
         self.equipamento_mov_dropdown.on_change = lambda e: self.on_equipamento_mov_change()
@@ -85,7 +99,7 @@ class MovimentacoesTab(BaseTab):
         self.cliente_mov_dropdown = ft.Dropdown(
             label="Cliente *",
             hint_text="Selecione o cliente",
-            width=400,
+            expand=True,
             options=[],
             visible=False,
         )
@@ -93,13 +107,13 @@ class MovimentacoesTab(BaseTab):
         self.usuario_field = ft.TextField(
             label="Seu Nome (Responsável) *",
             value="Técnico",
-            width=400,
+            expand=True,
         )
         
         self.obs_mov_field = ft.TextField(
             label="Observações",
             hint_text="Informações adicionais",
-            width=400,
+            expand=True,
             multiline=True,
             min_lines=3,
             max_lines=5,
@@ -109,7 +123,7 @@ class MovimentacoesTab(BaseTab):
         
         self.acao_filter_mov = ft.Dropdown(
             label="Filtrar por ação",
-            width=150,
+            expand=True,
             value="Todas",
             options=[
                 ft.dropdown.Option("Todas"),
@@ -126,7 +140,7 @@ class MovimentacoesTab(BaseTab):
         
         self.limite_dropdown = ft.Dropdown(
             label="Mostrar",
-            width=100,
+            expand=True,
             value="25",
             options=[
                 ft.dropdown.Option("10"),
@@ -165,16 +179,14 @@ class MovimentacoesTab(BaseTab):
                     self.movimentacao_status,
                     ft.Row(
                         [
-                            ft.FilledButton("✅ Registrar", on_click=self.registrar_movimentacao),
-                            ft.FilledButton("🔄 Limpar", on_click=self.limpar_form),
+                            ft.FilledButton("✅ Registrar", on_click=self.registrar_movimentacao, expand=True),
+                            ft.FilledButton("🔄 Limpar", on_click=self.limpar_form, expand=True),
                         ],
                         spacing=10,
                     ),
                 ],
                 spacing=10,
-                scroll=ft.ScrollMode.AUTO,
             ),
-            width=450,
             padding=20,
             bgcolor=self.get_bg_color(),
             border_radius=10,
@@ -186,25 +198,33 @@ class MovimentacoesTab(BaseTab):
             content=ft.Column(
                 [
                     ft.Text("Movimentações Recentes", size=18, weight=ft.FontWeight.BOLD),
-                    ft.Row(
+                    ft.ResponsiveRow(
                         [
-                            self.acao_filter_mov,
-                            self.limite_dropdown,
-                            ft.FilledButton("🔄 Atualizar", on_click=lambda e: self.carregar_movimentacoes()),
+                            ft.Container(
+                                content=self.acao_filter_mov,
+                                col={"sm": 12, "md": 4, "lg": 4},
+                            ),
+                            ft.Container(
+                                content=self.limite_dropdown,
+                                col={"sm": 12, "md": 3, "lg": 3},
+                            ),
+                            ft.Container(
+                                content=ft.FilledButton("🔄 Atualizar", on_click=lambda e: self.carregar_movimentacoes(), expand=True),
+                                col={"sm": 12, "md": 5, "lg": 5},
+                            ),
                         ],
                         spacing=10,
+                        run_spacing=10,
                     ),
                     ft.Container(
                         content=ft.Column(
                             [self.movimentacoes_table],
                             scroll=ft.ScrollMode.AUTO,
                         ),
-                        height=500,
                     ),
                 ],
                 spacing=10,
             ),
-            expand=True,
             padding=20,
             bgcolor=self.get_bg_color(),
             border_radius=10,

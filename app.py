@@ -8,6 +8,7 @@ from database import Database
 from datetime import datetime
 import calendar
 import warnings
+from utils.backup import BackupManager
 
 # Importar módulos das abas
 from gui.dashboard import DashboardTab
@@ -26,9 +27,19 @@ class FastTechApp:
         self.page = page
         self.db = Database()
         self.lembretes = {}
+        self.backup_manager = BackupManager()
         
         # Carregar configurações primeiro
         self.carregar_config()
+        
+        # Executar backup automático se configurado
+        if self.config.get('backup_automatico', False):
+            self.executar_backup_automatico()
+        
+        # Limpar backups antigos se configurado
+        dias_manter = self.config.get('backup_dias', 7)
+        if dias_manter > 0:
+            self.limpar_backups_antigos(dias_manter)
         
         # Configurações da página
         self.page.title = "FastTech Control - Sistema de Gestão"
@@ -354,6 +365,23 @@ class FastTechApp:
                 return f"{size / (1024 * 1024):.1f} MB"
         except:
             return "-- KB"
+    
+    def executar_backup_automatico(self):
+        """Executa backup automático ao iniciar o sistema"""
+        try:
+            backup_path = self.backup_manager.criar_backup()
+            print(f"✅ Backup automático criado: {backup_path}")
+        except Exception as e:
+            print(f"❌ Erro ao criar backup automático: {str(e)}")
+    
+    def limpar_backups_antigos(self, dias: int):
+        """Limpa backups mais antigos que X dias"""
+        try:
+            removidos = self.backup_manager.limpar_backups_antigos(dias)
+            if removidos > 0:
+                print(f"🗑️ {removidos} backup(s) antigo(s) removido(s)")
+        except Exception as e:
+            print(f"❌ Erro ao limpar backups antigos: {str(e)}")
 
 
 def main(page: ft.Page):

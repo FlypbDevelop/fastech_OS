@@ -3,6 +3,7 @@ Aba Configurações - Configurações do sistema
 """
 import flet as ft
 from gui.base import BaseTab
+from utils.backup import BackupManager
 
 
 class ConfiguracoesTab(BaseTab):
@@ -15,6 +16,7 @@ class ConfiguracoesTab(BaseTab):
         self.get_db_size = get_db_size_callback
         self.config_view = "backup"
         self.config_content_container = None
+        self.backup_manager = BackupManager()
     
     def build(self):
         """Constrói a interface de configurações"""
@@ -83,7 +85,6 @@ class ConfiguracoesTab(BaseTab):
         self.backup_dias_field = ft.TextField(
             label="Manter backups dos últimos (dias)",
             value=str(self.config['backup_dias']),
-            expand=True,
             keyboard_type=ft.KeyboardType.NUMBER,
         )
         
@@ -91,11 +92,64 @@ class ConfiguracoesTab(BaseTab):
         self.backup_pasta_field = ft.TextField(
             label="Pasta de Backup",
             value=self.config['backup_pasta'],
-            expand=True,
         )
         
         # Status
         self.backup_status = ft.Text("", size=14)
+        
+        # Lista de backups
+        backups = self.backup_manager.listar_backups()
+        
+        if backups:
+            backup_table = ft.DataTable(
+                columns=[
+                    ft.DataColumn(ft.Text("Nome", weight=ft.FontWeight.BOLD)),
+                    ft.DataColumn(ft.Text("Tamanho", weight=ft.FontWeight.BOLD)),
+                    ft.DataColumn(ft.Text("Data", weight=ft.FontWeight.BOLD)),
+                    ft.DataColumn(ft.Text("Ações", weight=ft.FontWeight.BOLD)),
+                ],
+                rows=[],
+            )
+            
+            for backup in backups[:10]:  # Mostrar apenas os 10 mais recentes
+                def deletar_backup(e, caminho=backup['caminho']):
+                    try:
+                        self.backup_manager.deletar_backup(caminho)
+                        self.backup_status.value = "✅ Backup deletado com sucesso!"
+                        self.backup_status.color = ft.Colors.GREEN
+                        # Recarregar view
+                        self.config_content_container.content = self.criar_config_backup()
+                        self.page.update()
+                    except Exception as ex:
+                        self.backup_status.value = f"❌ Erro ao deletar: {str(ex)}"
+                        self.backup_status.color = ft.Colors.RED
+                        self.page.update()
+                
+                backup_table.rows.append(
+                    ft.DataRow(
+                        cells=[
+                            ft.DataCell(ft.Text(backup['nome'], size=12)),
+                            ft.DataCell(ft.Text(self.backup_manager.formatar_tamanho(backup['tamanho']), size=12)),
+                            ft.DataCell(ft.Text(backup['data_criacao'].strftime("%d/%m/%Y %H:%M"), size=12)),
+                            ft.DataCell(
+                                ft.TextButton("🗑️ Deletar", on_click=deletar_backup, tooltip="Deletar backup")
+                            ),
+                        ],
+                    )
+                )
+            
+            backups_section = [
+                ft.Text("Backups Disponíveis (10 mais recentes)", size=16, weight=ft.FontWeight.BOLD),
+                ft.Container(
+                    content=ft.Column([backup_table], scroll=ft.ScrollMode.AUTO),
+                    height=300,
+                ),
+            ]
+        else:
+            backups_section = [
+                ft.Text("Backups Disponíveis", size=16, weight=ft.FontWeight.BOLD),
+                ft.Text("Nenhum backup encontrado", size=14, color=ft.Colors.GREY_400),
+            ]
         
         return ft.Container(
             content=ft.Column(
@@ -105,6 +159,7 @@ class ConfiguracoesTab(BaseTab):
                     ft.Text("Backup Automático", size=16, weight=ft.FontWeight.BOLD),
                     self.backup_auto_check,
                     ft.Text("Limpeza Automática", size=16, weight=ft.FontWeight.BOLD),
+                    ft.Text("Backups mais antigos que este período serão removidos automaticamente", size=12, color=ft.Colors.GREY_400),
                     self.backup_dias_field,
                     ft.Text("Pasta de Backup", size=16, weight=ft.FontWeight.BOLD),
                     self.backup_pasta_field,
@@ -118,7 +173,8 @@ class ConfiguracoesTab(BaseTab):
                         alignment=ft.MainAxisAlignment.CENTER,
                     ),
                     self.backup_status,
-                ],
+                    ft.Divider(),
+                ] + backups_section,
                 spacing=15,
                 scroll=ft.ScrollMode.AUTO,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -130,7 +186,7 @@ class ConfiguracoesTab(BaseTab):
     def criar_backup_agora(self, e):
         """Cria um backup imediatamente"""
         try:
-            backup_path = self.db.backup_database()
+            backup_path = self.backup_manager.criar_backup()
             self.backup_status.value = f"✅ Backup criado: {backup_path}"
             self.backup_status.color = ft.Colors.GREEN
         except Exception as ex:
@@ -142,13 +198,27 @@ class ConfiguracoesTab(BaseTab):
         """Salva configurações de backup"""
         self.config['backup_automatico'] = self.backup_auto_check.value
         try:
-            self.config['backup_dias'] = int(self.backup_dias_field.value)
+            dias = int(self.backup_dias_field.value)
+            if dias < 0:
+                dias = 0
+            self.config['backup_dias'] = dias
         except:
             self.config['backup_dias'] = 7
         self.config['backup_pasta'] = self.backup_pasta_field.value
         
         if self.salvar_config():
-            self.backup_status.value = "✅ Configurações salvas com sucesso!"
+            # Executar limpeza de backups antigos se configurado
+            if self.config['backup_dias'] > 0:
+                try:
+                    removidos = self.backup_manager.limpar_backups_antigos(self.config['backup_dias'])
+                    if removidos > 0:
+                        self.backup_status.value = f"✅ Configurações salvas! {removidos} backup(s) antigo(s) removido(s)"
+                    else:
+                        self.backup_status.value = "✅ Configurações salvas com sucesso!"
+                except Exception as ex:
+                    self.backup_status.value = f"✅ Configurações salvas (erro ao limpar backups: {str(ex)})"
+            else:
+                self.backup_status.value = "✅ Configurações salvas com sucesso!"
             self.backup_status.color = ft.Colors.GREEN
         else:
             self.backup_status.value = "❌ Erro ao salvar configurações"
@@ -170,7 +240,6 @@ class ConfiguracoesTab(BaseTab):
         self.usuario_padrao_field = ft.TextField(
             label="Nome do Usuário Padrão",
             value=self.config['usuario_padrao'],
-            expand=True,
             hint_text="Ex: João Silva",
         )
         
