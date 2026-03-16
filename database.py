@@ -56,7 +56,7 @@ class Database:
         except:
             pass  # Coluna já existe
         
-        # Equipamentos e histórico permanecem iguais
+        # Equipamentos
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS equipamentos (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -83,6 +83,26 @@ class Database:
                 acao TEXT NOT NULL,
                 usuario_responsavel TEXT NOT NULL,
                 observacoes TEXT,
+                FOREIGN KEY (equipamento_id) REFERENCES equipamentos(id) ON DELETE CASCADE,
+                FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE SET NULL
+            )
+        """)
+        
+        # Nova tabela de serviços realizados
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS servicos_equipamentos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                equipamento_id INTEGER NOT NULL,
+                cliente_id INTEGER,
+                data_servico TIMESTAMP NOT NULL,
+                tipo_servico TEXT NOT NULL,
+                descricao_problema TEXT,
+                servico_realizado TEXT NOT NULL,
+                situacao_final TEXT NOT NULL,
+                tecnico_responsavel TEXT NOT NULL,
+                valor_servico REAL,
+                observacoes TEXT,
+                data_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (equipamento_id) REFERENCES equipamentos(id) ON DELETE CASCADE,
                 FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE SET NULL
             )
@@ -309,6 +329,79 @@ class Database:
             ORDER BY h.data_inicio DESC
         """, (cliente_id,))
         return [dict(row) for row in self.cursor.fetchall()]
+    
+    # ==================== OPERAÇÕES DE SERVIÇOS ====================
+    
+    def inserir_servico(self, equipamento_id: int, data_servico: str, tipo_servico: str,
+                       servico_realizado: str, situacao_final: str, tecnico_responsavel: str,
+                       cliente_id: int = None, descricao_problema: str = None,
+                       valor_servico: float = None, observacoes: str = None) -> int:
+        """Insere um novo registro de serviço"""
+        self.cursor.execute("""
+            INSERT INTO servicos_equipamentos 
+            (equipamento_id, cliente_id, data_servico, tipo_servico, descricao_problema,
+             servico_realizado, situacao_final, tecnico_responsavel, valor_servico, observacoes)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (equipamento_id, cliente_id, data_servico, tipo_servico, descricao_problema,
+              servico_realizado, situacao_final, tecnico_responsavel, valor_servico, observacoes))
+        self.conn.commit()
+        return self.cursor.lastrowid
+    
+    def buscar_servicos_equipamento(self, equipamento_id: int) -> List[Dict]:
+        """Busca todos os serviços realizados em um equipamento"""
+        self.cursor.execute("""
+            SELECT s.*, c.nome as cliente_nome, c.telefone as cliente_telefone
+            FROM servicos_equipamentos s
+            LEFT JOIN clientes c ON s.cliente_id = c.id
+            WHERE s.equipamento_id = ?
+            ORDER BY s.data_servico DESC
+        """, (equipamento_id,))
+        return [dict(row) for row in self.cursor.fetchall()]
+    
+    def contar_servicos_equipamento(self, equipamento_id: int) -> int:
+        """Conta quantos serviços foram realizados em um equipamento"""
+        self.cursor.execute("""
+            SELECT COUNT(*) FROM servicos_equipamentos WHERE equipamento_id = ?
+        """, (equipamento_id,))
+        return self.cursor.fetchone()[0]
+    
+    def buscar_ultimo_servico_equipamento(self, equipamento_id: int) -> Optional[Dict]:
+        """Busca o último serviço realizado em um equipamento"""
+        self.cursor.execute("""
+            SELECT s.*, c.nome as cliente_nome
+            FROM servicos_equipamentos s
+            LEFT JOIN clientes c ON s.cliente_id = c.id
+            WHERE s.equipamento_id = ?
+            ORDER BY s.data_servico DESC
+            LIMIT 1
+        """, (equipamento_id,))
+        row = self.cursor.fetchone()
+        return dict(row) if row else None
+    
+    def atualizar_servico(self, servico_id: int, **kwargs) -> bool:
+        """Atualiza dados de um serviço"""
+        campos_permitidos = {'data_servico', 'tipo_servico', 'descricao_problema', 
+                            'servico_realizado', 'situacao_final', 'tecnico_responsavel',
+                            'valor_servico', 'observacoes', 'cliente_id'}
+        campos_atualizar = {k: v for k, v in kwargs.items() if k in campos_permitidos}
+        
+        if not campos_atualizar:
+            return False
+            
+        campos = ", ".join([f"{k} = ?" for k in campos_atualizar.keys()])
+        valores = list(campos_atualizar.values()) + [servico_id]
+        
+        self.cursor.execute(f"""
+            UPDATE servicos_equipamentos SET {campos} WHERE id = ?
+        """, valores)
+        self.conn.commit()
+        return True
+    
+    def deletar_servico(self, servico_id: int) -> bool:
+        """Deleta um registro de serviço"""
+        self.cursor.execute("DELETE FROM servicos_equipamentos WHERE id = ?", (servico_id,))
+        self.conn.commit()
+        return True
     
     # ==================== OPERAÇÕES AUXILIARES ====================
     
