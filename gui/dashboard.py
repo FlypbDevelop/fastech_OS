@@ -9,19 +9,6 @@ from gui.base import BaseTab
 class DashboardTab(BaseTab):
     """Aba do Dashboard com estatísticas e informações gerais"""
     
-    # Sistema de cores padronizado (3 cores)
-    PRIMARY_COLOR = ft.Colors.BLUE_700      # 60% - Cards principais
-    SECONDARY_COLOR = ft.Colors.BLUE_400    # 30% - Cards secundários
-    ACCENT_COLOR = ft.Colors.AMBER_600      # 10% - Alertas/destaques
-    
-    # Escala tipográfica padronizada
-    H1_SIZE = 32  # Título principal
-    H2_SIZE = 24  # Saudação
-    H3_SIZE = 18  # Subtítulos
-    BODY_SIZE = 14  # Texto padrão
-    SMALL_SIZE = 12  # Textos secundários
-    CAPTION_SIZE = 10  # Legendas
-    
     def __init__(self, page, db, config, abrir_calendario_callback, contar_movimentacoes_callback, get_db_size_callback):
         super().__init__(page, db, config)
         self.abrir_calendario = abrir_calendario_callback

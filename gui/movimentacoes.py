@@ -382,8 +382,13 @@ class MovimentacoesTab(BaseTab):
         else:
             return "Em Estoque"
     
-    def carregar_movimentacoes(self):
-        """Carrega movimentações recentes"""
+    def _buscar_dados_movimentacoes(self, acao_filtro: str, limite: int) -> list:
+        """
+        Executa a query SQL de historico_posse com JOIN em equipamentos e clientes.
+        Aplica filtro por acao_filtro (ignora filtro se valor for "Todas").
+        Aplica limite antes de retornar.
+        Retorna lista de dicts. Não cria nenhum widget Flet.
+        """
         self.db.cursor.execute("""
             SELECT h.*, 
                    e.numero_serie, e.tipo,
@@ -393,20 +398,22 @@ class MovimentacoesTab(BaseTab):
             LEFT JOIN clientes c ON h.cliente_id = c.id
             ORDER BY h.data_inicio DESC
         """)
-        
+
         historicos = [dict(row) for row in self.db.cursor.fetchall()]
-        
-        # Filtro de ação
-        acao_filtro = self.acao_filter_mov.value
+
         if acao_filtro != "Todas":
             historicos = [h for h in historicos if h['acao'] == acao_filtro]
-        
-        # Limite
+
+        return historicos[:limite]
+
+    def carregar_movimentacoes(self):
+        """Carrega movimentações recentes"""
+        acao_filtro = self.acao_filter_mov.value
         limite = int(self.limite_dropdown.value)
-        historicos = historicos[:limite]
-        
+        historicos = self._buscar_dados_movimentacoes(acao_filtro, limite)
+
         self.movimentacoes_table.rows.clear()
-        
+
         for h in historicos:
             status_icon = "🟢" if h['data_fim'] is None else "⚪"
             self.movimentacoes_table.rows.append(
@@ -420,6 +427,6 @@ class MovimentacoesTab(BaseTab):
                     ],
                 )
             )
-        
+
         if hasattr(self, 'page'):
             self.page.update()

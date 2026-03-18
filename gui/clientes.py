@@ -462,97 +462,81 @@ class ClientesTab(BaseTab):
         # Resetar visibilidade dos campos
         self.on_tipo_cliente_change(None)
     
+    def _render_linha_cliente(self, cliente: dict, reload_callback=None) -> ft.DataRow:
+        """
+        Recebe um dict de cliente e retorna um ft.DataRow completo com 6 células:
+        id, tipo (com ícone), nome, telefone, info_extra, ações.
+        reload_callback é chamado após exclusão bem-sucedida.
+        Se None, usa self.carregar_clientes como padrão.
+        """
+        _reload = reload_callback if reload_callback is not None else self.carregar_clientes
+
+        def confirmar_editar(e, c=cliente):
+            self.criar_dialogo_confirmacao(
+                titulo="Confirmar Edição",
+                mensagem=f"Deseja editar o cliente '{c['nome']}'?",
+                on_confirmar=lambda ev: (
+                    setattr(self.page.dialog, 'open', False),
+                    self.page.update(),
+                    self.editar_cliente(c),
+                ),
+            )
+
+        def confirmar_excluir(e, c=cliente):
+            def _excluir(ev):
+                self.page.dialog.open = False
+                self.page.update()
+                if self.db.deletar_cliente(c['id']):
+                    self.cliente_status.value = f"✅ Cliente '{c['nome']}' excluído!"
+                    self.cliente_status.color = ft.Colors.GREEN
+                else:
+                    self.cliente_status.value = "❌ Cliente possui equipamentos vinculados"
+                    self.cliente_status.color = ft.Colors.RED
+                _reload()
+                self.page.update()
+
+            self.criar_dialogo_confirmacao(
+                titulo="⚠️ Confirmar Exclusão",
+                mensagem=f"Tem certeza que deseja excluir o cliente '{c['nome']}'?\n\nEsta ação não pode ser desfeita.",
+                on_confirmar=_excluir,
+                texto_confirmar="Excluir",
+                estilo_confirmar=ft.ButtonStyle(bgcolor=ft.Colors.RED),
+            )
+
+        tipo = cliente.get('tipo_cliente', 'Cliente Final')
+        if tipo == "Terceirizado":
+            tipo_icon = "🏢"
+            info_extra = cliente.get('regiao', '-')
+        else:
+            tipo_icon = "👤"
+            info_extra = cliente.get('setor', '-')
+
+        return ft.DataRow(
+            cells=[
+                ft.DataCell(ft.Text(str(cliente['id']))),
+                ft.DataCell(ft.Text(f"{tipo_icon} {tipo}", size=12)),
+                ft.DataCell(ft.Text(cliente['nome'])),
+                ft.DataCell(ft.Text(cliente['telefone'])),
+                ft.DataCell(ft.Text(info_extra)),
+                ft.DataCell(
+                    self.criar_linha_tabela_acoes([
+                        ("✏️", "Editar", confirmar_editar),
+                        ("🗑️", "Excluir", confirmar_excluir),
+                    ])
+                ),
+            ],
+        )
+
     def carregar_clientes(self):
         """Carrega todos os clientes na tabela"""
         clientes = self.db.buscar_clientes()
         self.clientes_table.rows.clear()
-        
+
         for c in clientes:
-            def confirmar_editar_cliente(e, cliente=c):
-                """Mostra confirmação antes de editar"""
-                def confirmar(ev):
-                    dialogo.open = False
-                    self.page.update()
-                    self.editar_cliente(cliente)
-                
-                def cancelar(ev):
-                    dialogo.open = False
-                    self.page.update()
-                
-                dialogo = ft.AlertDialog(
-                    title=ft.Text("Confirmar Edição"),
-                    content=ft.Text(f"Deseja editar o cliente '{cliente['nome']}'?"),
-                    actions=[
-                        ft.TextButton("Cancelar", on_click=cancelar),
-                        ft.FilledButton("Confirmar", on_click=confirmar),
-                    ],
-                )
-                
-                self.page.dialog = dialogo
-                dialogo.open = True
-                self.page.update()
-            
-            def confirmar_excluir_cliente(e, cliente=c):
-                """Mostra confirmação antes de excluir"""
-                def confirmar(ev):
-                    dialogo.open = False
-                    self.page.update()
-                    if self.db.deletar_cliente(cliente['id']):
-                        self.cliente_status.value = f"✅ Cliente '{cliente['nome']}' excluído!"
-                        self.cliente_status.color = ft.Colors.GREEN
-                    else:
-                        self.cliente_status.value = "❌ Cliente possui equipamentos vinculados"
-                        self.cliente_status.color = ft.Colors.RED
-                    self.carregar_clientes()
-                    self.page.update()
-                
-                def cancelar(ev):
-                    dialogo.open = False
-                    self.page.update()
-                
-                dialogo = ft.AlertDialog(
-                    title=ft.Text("⚠️ Confirmar Exclusão"),
-                    content=ft.Text(f"Tem certeza que deseja excluir o cliente '{cliente['nome']}'?\n\nEsta ação não pode ser desfeita."),
-                    actions=[
-                        ft.TextButton("Cancelar", on_click=cancelar),
-                        ft.FilledButton("Excluir", on_click=confirmar, style=ft.ButtonStyle(bgcolor=ft.Colors.RED)),
-                    ],
-                )
-                
-                self.page.dialog = dialogo
-                dialogo.open = True
-                self.page.update()
-            
-            # Determinar ícone e info baseado no tipo
-            tipo = c.get('tipo_cliente', 'Cliente Final')
-            if tipo == "Terceirizado":
-                tipo_icon = "🏢"
-                info_extra = c.get('regiao', '-')
-            else:
-                tipo_icon = "👤"
-                info_extra = c.get('setor', '-')
-            
             self.clientes_table.rows.append(
-                ft.DataRow(
-                    cells=[
-                        ft.DataCell(ft.Text(str(c['id']))),
-                        ft.DataCell(ft.Text(f"{tipo_icon} {tipo}", size=12)),
-                        ft.DataCell(ft.Text(c['nome'])),
-                        ft.DataCell(ft.Text(c['telefone'])),
-                        ft.DataCell(ft.Text(info_extra)),
-                        ft.DataCell(
-                            ft.Row(
-                                [
-                                    ft.TextButton("✏️", on_click=confirmar_editar_cliente, tooltip="Editar"),
-                                    ft.TextButton("🗑️", on_click=confirmar_excluir_cliente, tooltip="Excluir"),
-                                ],
-                                spacing=5,
-                            )
-                        ),
-                    ],
-                )
+                self._render_linha_cliente(c, reload_callback=self.carregar_clientes)
             )
-        
+
         if hasattr(self, 'page'):
             self.page.update()
     
@@ -592,91 +576,10 @@ class ClientesTab(BaseTab):
         termo = self.cliente_search.value or ""
         clientes = self.db.buscar_clientes(termo)
         self.clientes_table.rows.clear()
-        
+
         for c in clientes:
-            def confirmar_editar_cliente(e, cliente=c):
-                """Mostra confirmação antes de editar"""
-                def confirmar(ev):
-                    dialogo.open = False
-                    self.page.update()
-                    self.editar_cliente(cliente)
-                
-                def cancelar(ev):
-                    dialogo.open = False
-                    self.page.update()
-                
-                dialogo = ft.AlertDialog(
-                    title=ft.Text("Confirmar Edição"),
-                    content=ft.Text(f"Deseja editar o cliente '{cliente['nome']}'?"),
-                    actions=[
-                        ft.TextButton("Cancelar", on_click=cancelar),
-                        ft.FilledButton("Confirmar", on_click=confirmar),
-                    ],
-                )
-                
-                self.page.dialog = dialogo
-                dialogo.open = True
-                self.page.update()
-            
-            def confirmar_excluir_cliente(e, cliente=c):
-                """Mostra confirmação antes de excluir"""
-                def confirmar(ev):
-                    dialogo.open = False
-                    self.page.update()
-                    if self.db.deletar_cliente(cliente['id']):
-                        self.cliente_status.value = f"✅ Cliente '{cliente['nome']}' excluído!"
-                        self.cliente_status.color = ft.Colors.GREEN
-                    else:
-                        self.cliente_status.value = "❌ Cliente possui equipamentos vinculados"
-                        self.cliente_status.color = ft.Colors.RED
-                    self.buscar_clientes()
-                    self.page.update()
-                
-                def cancelar(ev):
-                    dialogo.open = False
-                    self.page.update()
-                
-                dialogo = ft.AlertDialog(
-                    title=ft.Text("⚠️ Confirmar Exclusão"),
-                    content=ft.Text(f"Tem certeza que deseja excluir o cliente '{cliente['nome']}'?\n\nEsta ação não pode ser desfeita."),
-                    actions=[
-                        ft.TextButton("Cancelar", on_click=cancelar),
-                        ft.FilledButton("Excluir", on_click=confirmar, style=ft.ButtonStyle(bgcolor=ft.Colors.RED)),
-                    ],
-                )
-                
-                self.page.dialog = dialogo
-                dialogo.open = True
-                self.page.update()
-            
-            # Determinar ícone e info baseado no tipo
-            tipo = c.get('tipo_cliente', 'Cliente Final')
-            if tipo == "Terceirizado":
-                tipo_icon = "🏢"
-                info_extra = c.get('regiao', '-')
-            else:
-                tipo_icon = "👤"
-                info_extra = c.get('setor', '-')
-            
             self.clientes_table.rows.append(
-                ft.DataRow(
-                    cells=[
-                        ft.DataCell(ft.Text(str(c['id']))),
-                        ft.DataCell(ft.Text(f"{tipo_icon} {tipo}", size=12)),
-                        ft.DataCell(ft.Text(c['nome'])),
-                        ft.DataCell(ft.Text(c['telefone'])),
-                        ft.DataCell(ft.Text(info_extra)),
-                        ft.DataCell(
-                            ft.Row(
-                                [
-                                    ft.TextButton("✏️", on_click=confirmar_editar_cliente, tooltip="Editar"),
-                                    ft.TextButton("🗑️", on_click=confirmar_excluir_cliente, tooltip="Excluir"),
-                                ],
-                                spacing=5,
-                            )
-                        ),
-                    ],
-                )
+                self._render_linha_cliente(c, reload_callback=self.buscar_clientes)
             )
-        
+
         self.page.update()

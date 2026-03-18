@@ -8,52 +8,151 @@ from datetime import datetime
 
 class EquipamentosTab(BaseTab):
     """Aba de gestão de equipamentos com controle de serviços"""
-    
+
     def __init__(self, page, db, config):
         super().__init__(page, db, config)
         self.equipamento_selecionado = None
         self.view_atual = "busca"  # busca, cadastro, servicos
-        
+
         # Campos de busca
         self.serial_busca_field = None
         self.info_equipamento_container = None
-        
-        # Campos do formulário de equipamento
-        self.numero_serie_field = None
-        self.tipo_dropdown = None
-        self.marca_field = None
-        self.modelo_field = None
-        self.status_dropdown = None
-        self.valor_field = None
-        self.garantia_field = None
-        self.obs_field = None
-        self.equipamento_status = None
-        
-        # Campos de serviço
-        self.data_servico_field = None
-        self.tipo_servico_dropdown = None
-        self.cliente_servico_dropdown = None
-        self.descricao_problema_field = None
-        self.servico_realizado_field = None
-        self.situacao_final_dropdown = None
-        self.tecnico_field = None
-        self.valor_servico_field = None
-        self.obs_servico_field = None
-        self.servico_status = None
-        
+
         # Container principal
         self.content_container = None
-    
+
+        # Inicializar campos de cadastro e serviço no __init__
+        self._init_campos_cadastro()
+        self._init_campos_servico()
+
+    def _init_campos_cadastro(self):
+        """Inicializa todos os campos do formulário de cadastro de equipamento"""
+        self.numero_serie_field = ft.TextField(
+            label="Número de Série *",
+            hint_text="Ex: NB-2024-001",
+            expand=True,
+        )
+        self.tipo_dropdown = ft.Dropdown(
+            label="Tipo de Equipamento *",
+            hint_text="Selecione o tipo",
+            expand=True,
+            options=[
+                ft.dropdown.Option("Notebook"),
+                ft.dropdown.Option("Desktop"),
+                ft.dropdown.Option("Monitor"),
+                ft.dropdown.Option("Impressora"),
+                ft.dropdown.Option("Roteador"),
+                ft.dropdown.Option("Switch"),
+                ft.dropdown.Option("Servidor"),
+                ft.dropdown.Option("Outro"),
+            ],
+        )
+        self.marca_field = ft.TextField(label="Marca", hint_text="Ex: Dell, HP, Epson", expand=True)
+        self.modelo_field = ft.TextField(label="Modelo", hint_text="Ex: L355, Latitude 5420", expand=True)
+        self.status_dropdown = ft.Dropdown(
+            label="Status",
+            expand=True,
+            value="Em Estoque",
+            options=[
+                ft.dropdown.Option("Em Estoque"),
+                ft.dropdown.Option("Com o Cliente"),
+                ft.dropdown.Option("Em Manutenção"),
+                ft.dropdown.Option("Descartado"),
+            ],
+        )
+        self.valor_field = ft.TextField(label="Valor Estimado (R$)", hint_text="0.00", expand=True)
+        self.garantia_field = ft.TextField(label="Data Garantia", hint_text="AAAA-MM-DD", expand=True)
+        self.obs_field = ft.TextField(
+            label="Observações",
+            hint_text="Informações adicionais",
+            expand=True,
+            multiline=True,
+            min_lines=2,
+            max_lines=4,
+        )
+        self.equipamento_status = ft.Text("", size=14)
+
+    def _init_campos_servico(self):
+        """Inicializa todos os campos do formulário de serviço"""
+        self.data_servico_field = ft.TextField(
+            label="Data do Serviço *",
+            hint_text="AAAA-MM-DD ou DD/MM/AAAA",
+            value=datetime.now().strftime("%Y-%m-%d"),
+            expand=True,
+        )
+        self.tipo_servico_dropdown = ft.Dropdown(
+            label="Tipo de Serviço *",
+            expand=True,
+            options=[
+                ft.dropdown.Option("Manutenção Preventiva"),
+                ft.dropdown.Option("Manutenção Corretiva"),
+                ft.dropdown.Option("Reparo"),
+                ft.dropdown.Option("Instalação"),
+                ft.dropdown.Option("Configuração"),
+                ft.dropdown.Option("Limpeza"),
+                ft.dropdown.Option("Atualização"),
+                ft.dropdown.Option("Diagnóstico"),
+                ft.dropdown.Option("Outro"),
+            ],
+        )
+        self.cliente_servico_dropdown = ft.Dropdown(
+            label="Cliente (opcional)",
+            expand=True,
+            options=[ft.dropdown.Option("0", "Sem cliente")],
+            value="0",
+        )
+        self.descricao_problema_field = ft.TextField(
+            label="Descrição do Problema",
+            hint_text="Descreva o problema relatado",
+            expand=True,
+            multiline=True,
+            min_lines=2,
+            max_lines=3,
+        )
+        self.servico_realizado_field = ft.TextField(
+            label="Serviço Realizado *",
+            hint_text="Descreva o que foi feito",
+            expand=True,
+            multiline=True,
+            min_lines=3,
+            max_lines=5,
+        )
+        self.situacao_final_dropdown = ft.Dropdown(
+            label="Situação Final *",
+            expand=True,
+            options=[
+                ft.dropdown.Option("Resolvido"),
+                ft.dropdown.Option("Parcialmente Resolvido"),
+                ft.dropdown.Option("Não Resolvido"),
+                ft.dropdown.Option("Aguardando Peças"),
+                ft.dropdown.Option("Sem Conserto"),
+            ],
+        )
+        self.tecnico_field = ft.TextField(
+            label="Técnico Responsável *",
+            value=self.config.get('usuario_padrao', 'Técnico'),
+            expand=True,
+        )
+        self.valor_servico_field = ft.TextField(
+            label="Valor do Serviço (R$)",
+            hint_text="0.00",
+            expand=True,
+        )
+        self.obs_servico_field = ft.TextField(
+            label="Observações",
+            hint_text="Informações adicionais",
+            expand=True,
+            multiline=True,
+            min_lines=2,
+            max_lines=3,
+        )
+        self.servico_status = ft.Text("", size=14)
+
     def build(self):
         """Constrói a interface de equipamentos"""
         self.content_container = ft.Container(expand=True)
-        
-        # Navegação
         nav_bar = self.criar_navegacao()
-        
-        # Iniciar com view de busca
         self.mostrar_busca()
-        
         return ft.Container(
             content=ft.Column(
                 [nav_bar, self.content_container],
@@ -63,7 +162,6 @@ class EquipamentosTab(BaseTab):
             expand=True,
         )
 
-    
     def criar_navegacao(self):
         """Cria a barra de navegação"""
         return ft.Container(
@@ -101,12 +199,11 @@ class EquipamentosTab(BaseTab):
             padding=15,
             bgcolor=self.get_adaptive_color(ft.Colors.BLUE_GREY_800, ft.Colors.GREY_200),
         )
-    
+
     def mostrar_busca(self):
         """Mostra a view de busca por serial"""
         self.view_atual = "busca"
-        
-        # Campo de busca
+
         self.serial_busca_field = ft.TextField(
             label="Número de Série",
             hint_text="Digite o número de série do equipamento",
@@ -114,8 +211,7 @@ class EquipamentosTab(BaseTab):
             on_submit=lambda e: self.buscar_por_serial(),
             autofocus=True,
         )
-        
-        # Container para informações do equipamento
+
         self.info_equipamento_container = ft.Container(
             content=ft.Text(
                 "Digite um número de série e pressione Enter ou clique em Buscar",
@@ -124,11 +220,9 @@ class EquipamentosTab(BaseTab):
             ),
             padding=20,
         )
-        
-        # Buscar últimos equipamentos cadastrados
-        equipamentos_recentes = self.db.buscar_equipamentos()[:10]  # Últimos 10
-        
-        # Criar tabela de equipamentos recentes
+
+        equipamentos_recentes = self.db.buscar_equipamentos()[:10]
+
         if equipamentos_recentes:
             tabela_recentes = ft.DataTable(
                 columns=[
@@ -141,14 +235,14 @@ class EquipamentosTab(BaseTab):
                 ],
                 rows=[],
             )
-            
+
             for equip in equipamentos_recentes:
                 total_servicos = self.db.contar_servicos_equipamento(equip['id'])
-                
+
                 def ver_detalhes(e, eq=equip):
                     self.equipamento_selecionado = eq
                     self.mostrar_detalhes_equipamento(eq)
-                
+
                 tabela_recentes.rows.append(
                     ft.DataRow(
                         cells=[
@@ -162,15 +256,13 @@ class EquipamentosTab(BaseTab):
                                     "👁️ Ver",
                                     on_click=ver_detalhes,
                                     tooltip="Ver detalhes",
-                                    style=ft.ButtonStyle(
-                                        shape=ft.RoundedRectangleBorder(radius=8),
-                                    ),
+                                    style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=8)),
                                 )
                             ),
                         ],
                     )
                 )
-            
+
             lista_recentes = ft.Column(
                 [
                     ft.Text("📋 Últimos Equipamentos Cadastrados", size=16, weight=ft.FontWeight.BOLD),
@@ -183,7 +275,7 @@ class EquipamentosTab(BaseTab):
             )
         else:
             lista_recentes = ft.Text("Nenhum equipamento cadastrado ainda", size=14, color=ft.Colors.GREY_400)
-        
+
         self.content_container.content = ft.Container(
             content=ft.Column(
                 [
@@ -194,9 +286,7 @@ class EquipamentosTab(BaseTab):
                             ft.FilledButton(
                                 "🔍 Buscar",
                                 on_click=lambda e: self.buscar_por_serial(),
-                                style=ft.ButtonStyle(
-                                    shape=ft.RoundedRectangleBorder(radius=8),
-                                ),
+                                style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=8)),
                             ),
                         ],
                         spacing=10,
@@ -214,11 +304,10 @@ class EquipamentosTab(BaseTab):
         )
         self.page.update()
 
-    
     def buscar_por_serial(self):
         """Busca equipamento por número de série"""
         serial = self.serial_busca_field.value.strip()
-        
+
         if not serial:
             self.info_equipamento_container.content = ft.Text(
                 "❌ Digite um número de série",
@@ -227,17 +316,15 @@ class EquipamentosTab(BaseTab):
             )
             self.page.update()
             return
-        
-        # Buscar equipamento
+
         equip = self.db.buscar_equipamento_por_serie(serial)
-        
+
         if not equip:
-            # Equipamento não encontrado - oferecer cadastro
             def cadastrar_novo(e):
                 self.mostrar_cadastro()
                 self.numero_serie_field.value = serial
                 self.page.update()
-            
+
             self.info_equipamento_container.content = ft.Column(
                 [
                     ft.Text(f"❌ Equipamento '{serial}' não encontrado", size=16, color=ft.Colors.RED),
@@ -255,19 +342,16 @@ class EquipamentosTab(BaseTab):
             )
             self.page.update()
             return
-        
-        # Equipamento encontrado - mostrar informações
+
         self.equipamento_selecionado = equip
         self.mostrar_detalhes_equipamento(equip)
-    
+
     def mostrar_detalhes_equipamento(self, equip):
         """Mostra detalhes completos do equipamento"""
-        # Buscar serviços
         servicos = self.db.buscar_servicos_equipamento(equip['id'])
         total_servicos = len(servicos)
         ultimo_servico = self.db.buscar_ultimo_servico_equipamento(equip['id'])
-        
-        # Card com informações do equipamento
+
         info_card = ft.Container(
             content=ft.Column(
                 [
@@ -282,8 +366,7 @@ class EquipamentosTab(BaseTab):
             padding=20,
             border_radius=10,
         )
-        
-        # Último serviço
+
         ultimo_servico_card = None
         if ultimo_servico:
             ultimo_servico_card = ft.Container(
@@ -301,8 +384,7 @@ class EquipamentosTab(BaseTab):
                 padding=15,
                 border_radius=10,
             )
-        
-        # Tabela de serviços
+
         servicos_table = ft.DataTable(
             columns=[
                 ft.DataColumn(ft.Text("Data", weight=ft.FontWeight.BOLD)),
@@ -313,7 +395,7 @@ class EquipamentosTab(BaseTab):
             ],
             rows=[],
         )
-        
+
         for s in servicos:
             servicos_table.rows.append(
                 ft.DataRow(
@@ -326,15 +408,14 @@ class EquipamentosTab(BaseTab):
                     ],
                 )
             )
-        
-        # Botões de ação
+
         def registrar_servico_equipamento(e):
             self.mostrar_servicos()
-        
+
         def editar_equipamento(e):
             self.mostrar_cadastro()
             self.carregar_dados_equipamento(equip)
-        
+
         acoes = ft.Row(
             [
                 ft.FilledButton(
@@ -352,12 +433,11 @@ class EquipamentosTab(BaseTab):
             ],
             spacing=10,
         )
-        
-        # Montar conteúdo
+
         content_items = [info_card]
         if ultimo_servico_card:
             content_items.append(ultimo_servico_card)
-        
+
         content_items.extend([
             ft.Text(f"📋 Histórico de Serviços ({total_servicos})", size=16, weight=ft.FontWeight.BOLD),
             ft.Container(
@@ -366,68 +446,14 @@ class EquipamentosTab(BaseTab):
             ) if servicos else ft.Text("Nenhum serviço registrado", size=14, color=ft.Colors.GREY_400),
             acoes,
         ])
-        
-        self.info_equipamento_container.content = ft.Column(
-            content_items,
-            spacing=15,
-        )
+
+        self.info_equipamento_container.content = ft.Column(content_items, spacing=15)
         self.page.update()
 
-    
     def mostrar_cadastro(self):
-        """Mostra a view de cadastro de equipamento"""
+        """Mostra a view de cadastro de equipamento reutilizando campos existentes"""
         self.view_atual = "cadastro"
-        
-        # Criar campos se não existirem
-        self.numero_serie_field = ft.TextField(
-            label="Número de Série *",
-            hint_text="Ex: NB-2024-001",
-            expand=True,
-        )
-        
-        self.tipo_dropdown = ft.Dropdown(
-            label="Tipo de Equipamento *",
-            hint_text="Selecione o tipo",
-            expand=True,
-            options=[
-                ft.dropdown.Option("Notebook"),
-                ft.dropdown.Option("Desktop"),
-                ft.dropdown.Option("Monitor"),
-                ft.dropdown.Option("Impressora"),
-                ft.dropdown.Option("Roteador"),
-                ft.dropdown.Option("Switch"),
-                ft.dropdown.Option("Servidor"),
-                ft.dropdown.Option("Outro"),
-            ],
-        )
-        
-        self.marca_field = ft.TextField(label="Marca", hint_text="Ex: Dell, HP, Epson", expand=True)
-        self.modelo_field = ft.TextField(label="Modelo", hint_text="Ex: L355, Latitude 5420", expand=True)
-        self.status_dropdown = ft.Dropdown(
-            label="Status",
-            expand=True,
-            value="Em Estoque",
-            options=[
-                ft.dropdown.Option("Em Estoque"),
-                ft.dropdown.Option("Com o Cliente"),
-                ft.dropdown.Option("Em Manutenção"),
-                ft.dropdown.Option("Descartado"),
-            ],
-        )
-        
-        self.valor_field = ft.TextField(label="Valor Estimado (R$)", hint_text="0.00", expand=True)
-        self.garantia_field = ft.TextField(label="Data Garantia", hint_text="AAAA-MM-DD", expand=True)
-        self.obs_field = ft.TextField(
-            label="Observações",
-            hint_text="Informações adicionais",
-            expand=True,
-            multiline=True,
-            min_lines=2,
-            max_lines=4,
-        )
-        
-        self.equipamento_status = ft.Text("", size=14)
-        
+
         self.content_container.content = ft.Container(
             content=ft.Column(
                 [
@@ -467,18 +493,17 @@ class EquipamentosTab(BaseTab):
         )
         self.page.update()
 
-    
     def salvar_equipamento(self, e):
         """Salva ou atualiza um equipamento"""
         numero_serie = self.numero_serie_field.value
         tipo = self.tipo_dropdown.value
-        
+
         if not numero_serie or not tipo:
             self.equipamento_status.value = "❌ Número de série e tipo são obrigatórios"
             self.equipamento_status.color = ft.Colors.RED
             self.page.update()
             return
-        
+
         try:
             if self.equipamento_selecionado:
                 self.db.atualizar_equipamento(
@@ -504,8 +529,6 @@ class EquipamentosTab(BaseTab):
                     float(self.valor_field.value) if self.valor_field.value else None,
                     self.obs_field.value or None,
                 )
-                
-                # Registrar no histórico
                 self.db.inserir_historico(
                     equip_id,
                     "Cadastro",
@@ -513,16 +536,15 @@ class EquipamentosTab(BaseTab):
                     None,
                     observacoes="Cadastro inicial"
                 )
-                
                 self.equipamento_status.value = f"✅ Equipamento '{numero_serie}' cadastrado!"
-            
+
             self.equipamento_status.color = ft.Colors.GREEN
             self.page.update()
         except Exception as ex:
             self.equipamento_status.value = f"❌ Erro: {str(ex)}"
             self.equipamento_status.color = ft.Colors.RED
             self.page.update()
-    
+
     def carregar_dados_equipamento(self, equip):
         """Carrega dados do equipamento no formulário"""
         self.equipamento_selecionado = equip
@@ -537,7 +559,7 @@ class EquipamentosTab(BaseTab):
         self.equipamento_status.value = f"✏️ Editando: {equip['numero_serie']}"
         self.equipamento_status.color = ft.Colors.BLUE
         self.page.update()
-    
+
     def limpar_form_equipamento(self, e=None):
         """Limpa o formulário de equipamento"""
         self.numero_serie_field.value = ""
@@ -552,20 +574,21 @@ class EquipamentosTab(BaseTab):
         self.equipamento_status.value = ""
         self.page.update()
 
-    
     def mostrar_servicos(self):
-        """Mostra a view de registro de serviços"""
+        """Mostra a view de registro de serviços reutilizando campos existentes"""
         self.view_atual = "servicos"
-        
-        # Verificar se há equipamento selecionado
+
         if not self.equipamento_selecionado:
             self.content_container.content = ft.Container(
                 content=ft.Column(
                     [
                         ft.Text("⚠️ Nenhum equipamento selecionado", size=18, color=ft.Colors.ORANGE),
                         ft.Text("Busque um equipamento primeiro para registrar serviços", size=14),
-                        ft.FilledButton("🔍 Buscar Equipamento", on_click=lambda e: self.mostrar_busca(),
-                                      style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=8))),
+                        ft.FilledButton(
+                            "🔍 Buscar Equipamento",
+                            on_click=lambda e: self.mostrar_busca(),
+                            style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=8)),
+                        ),
                     ],
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                     spacing=15,
@@ -574,98 +597,16 @@ class EquipamentosTab(BaseTab):
             )
             self.page.update()
             return
-        
-        # Criar campos de serviço
-        self.data_servico_field = ft.TextField(
-            label="Data do Serviço *",
-            hint_text="AAAA-MM-DD ou DD/MM/AAAA",
-            value=datetime.now().strftime("%Y-%m-%d"),
-            expand=True,
-        )
-        
-        self.tipo_servico_dropdown = ft.Dropdown(
-            label="Tipo de Serviço *",
-            expand=True,
-            options=[
-                ft.dropdown.Option("Manutenção Preventiva"),
-                ft.dropdown.Option("Manutenção Corretiva"),
-                ft.dropdown.Option("Reparo"),
-                ft.dropdown.Option("Instalação"),
-                ft.dropdown.Option("Configuração"),
-                ft.dropdown.Option("Limpeza"),
-                ft.dropdown.Option("Atualização"),
-                ft.dropdown.Option("Diagnóstico"),
-                ft.dropdown.Option("Outro"),
-            ],
-        )
-        
-        # Dropdown de clientes
+
+        # Atualizar dropdown de clientes com dados atuais
         clientes = self.db.buscar_clientes()
-        cliente_options = [ft.dropdown.Option("0", "Sem cliente")]
+        self.cliente_servico_dropdown.options = [ft.dropdown.Option("0", "Sem cliente")]
         for c in clientes:
-            cliente_options.append(ft.dropdown.Option(str(c['id']), f"{c['nome']} - {c['telefone']}"))
-        
-        self.cliente_servico_dropdown = ft.Dropdown(
-            label="Cliente (opcional)",
-            expand=True,
-            options=cliente_options,
-            value="0",
-        )
-        
-        self.descricao_problema_field = ft.TextField(
-            label="Descrição do Problema",
-            hint_text="Descreva o problema relatado",
-            expand=True,
-            multiline=True,
-            min_lines=2,
-            max_lines=3,
-        )
-        
-        self.servico_realizado_field = ft.TextField(
-            label="Serviço Realizado *",
-            hint_text="Descreva o que foi feito",
-            expand=True,
-            multiline=True,
-            min_lines=3,
-            max_lines=5,
-        )
-        
-        self.situacao_final_dropdown = ft.Dropdown(
-            label="Situação Final *",
-            expand=True,
-            options=[
-                ft.dropdown.Option("Resolvido"),
-                ft.dropdown.Option("Parcialmente Resolvido"),
-                ft.dropdown.Option("Não Resolvido"),
-                ft.dropdown.Option("Aguardando Peças"),
-                ft.dropdown.Option("Sem Conserto"),
-            ],
-        )
-        
-        self.tecnico_field = ft.TextField(
-            label="Técnico Responsável *",
-            value=self.config.get('usuario_padrao', 'Técnico'),
-            expand=True,
-        )
-        
-        self.valor_servico_field = ft.TextField(
-            label="Valor do Serviço (R$)",
-            hint_text="0.00",
-            expand=True,
-        )
-        
-        self.obs_servico_field = ft.TextField(
-            label="Observações",
-            hint_text="Informações adicionais",
-            expand=True,
-            multiline=True,
-            min_lines=2,
-            max_lines=3,
-        )
-        
-        self.servico_status = ft.Text("", size=14)
-        
-        # Info do equipamento
+            self.cliente_servico_dropdown.options.append(
+                ft.dropdown.Option(str(c['id']), f"{c['nome']} - {c['telefone']}")
+            )
+        self.cliente_servico_dropdown.value = "0"
+
         equip = self.equipamento_selecionado
         info_equip = ft.Container(
             content=ft.Text(
@@ -677,7 +618,7 @@ class EquipamentosTab(BaseTab):
             padding=15,
             border_radius=10,
         )
-        
+
         self.content_container.content = ft.Container(
             content=ft.Column(
                 [
@@ -719,7 +660,6 @@ class EquipamentosTab(BaseTab):
         )
         self.page.update()
 
-    
     def salvar_servico(self, e):
         """Salva um novo serviço"""
         data_servico = self.data_servico_field.value
@@ -727,42 +667,35 @@ class EquipamentosTab(BaseTab):
         servico_realizado = self.servico_realizado_field.value
         situacao_final = self.situacao_final_dropdown.value
         tecnico = self.tecnico_field.value
-        
-        # Validações
+
         if not all([data_servico, tipo_servico, servico_realizado, situacao_final, tecnico]):
             self.servico_status.value = "❌ Preencha todos os campos obrigatórios"
             self.servico_status.color = ft.Colors.RED
             self.page.update()
             return
-        
-        # Converter data se necessário
+
         try:
             if '/' in data_servico:
-                # Formato DD/MM/AAAA
                 partes = data_servico.split('/')
                 data_servico = f"{partes[2]}-{partes[1]}-{partes[0]}"
-            
-            # Validar formato
             datetime.strptime(data_servico, "%Y-%m-%d")
-        except:
+        except Exception:
             self.servico_status.value = "❌ Data inválida. Use AAAA-MM-DD ou DD/MM/AAAA"
             self.servico_status.color = ft.Colors.RED
             self.page.update()
             return
-        
-        # Cliente ID
+
         cliente_id = None
         if self.cliente_servico_dropdown.value != "0":
             cliente_id = int(self.cliente_servico_dropdown.value)
-        
-        # Valor do serviço
+
         valor_servico = None
         if self.valor_servico_field.value:
             try:
                 valor_servico = float(self.valor_servico_field.value.replace(',', '.'))
-            except:
+            except Exception:
                 pass
-        
+
         try:
             self.db.inserir_servico(
                 self.equipamento_selecionado['id'],
@@ -776,30 +709,25 @@ class EquipamentosTab(BaseTab):
                 valor_servico,
                 self.obs_servico_field.value or None,
             )
-            
-            self.servico_status.value = f"✅ Serviço registrado com sucesso!"
+            self.servico_status.value = "✅ Serviço registrado com sucesso!"
             self.servico_status.color = ft.Colors.GREEN
-            
-            # Limpar formulário após 2 segundos
             self.limpar_form_servico()
-            
             self.page.update()
         except Exception as ex:
             self.servico_status.value = f"❌ Erro: {str(ex)}"
             self.servico_status.color = ft.Colors.RED
             self.page.update()
-    
+
     def limpar_form_servico(self, e=None):
         """Limpa o formulário de serviço"""
-        if hasattr(self, 'data_servico_field') and self.data_servico_field:
-            self.data_servico_field.value = datetime.now().strftime("%Y-%m-%d")
-            self.tipo_servico_dropdown.value = None
-            self.cliente_servico_dropdown.value = "0"
-            self.descricao_problema_field.value = ""
-            self.servico_realizado_field.value = ""
-            self.situacao_final_dropdown.value = None
-            self.tecnico_field.value = self.config.get('usuario_padrao', 'Técnico')
-            self.valor_servico_field.value = ""
-            self.obs_servico_field.value = ""
-            self.servico_status.value = ""
-            self.page.update()
+        self.data_servico_field.value = datetime.now().strftime("%Y-%m-%d")
+        self.tipo_servico_dropdown.value = None
+        self.cliente_servico_dropdown.value = "0"
+        self.descricao_problema_field.value = ""
+        self.servico_realizado_field.value = ""
+        self.situacao_final_dropdown.value = None
+        self.tecnico_field.value = self.config.get('usuario_padrao', 'Técnico')
+        self.valor_servico_field.value = ""
+        self.obs_servico_field.value = ""
+        self.servico_status.value = ""
+        self.page.update()

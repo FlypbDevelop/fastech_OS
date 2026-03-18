@@ -12,6 +12,38 @@ class ConsultasTab(BaseTab):
     def __init__(self, page, db, config):
         super().__init__(page, db, config)
         self.consulta_view = "equipamento"
+        self._init_campos()
+
+    def _init_campos(self):
+        """Inicializa campos de busca para reutilização entre navegações"""
+        self.equip_search_field = ft.TextField(
+            label="Número de Série",
+            hint_text="Digite o número de série...",
+            expand=True,
+            on_submit=lambda e: self.buscar_equipamento_consulta(),
+        )
+        self.equip_result_container = ft.Container(
+            content=ft.Text(
+                "Digite um número de série e clique em Buscar",
+                size=14,
+                color=ft.Colors.GREY_400,
+            ),
+            expand=True,
+        )
+        self.cliente_search_field = ft.TextField(
+            label="Buscar Cliente",
+            hint_text="Digite nome, telefone ou documento...",
+            expand=True,
+            on_submit=lambda e: self.buscar_cliente_consulta(),
+        )
+        self.cliente_result_container = ft.Container(
+            content=ft.Text(
+                "Digite nome, telefone ou documento e clique em Buscar",
+                size=14,
+                color=ft.Colors.GREY_400,
+            ),
+            expand=True,
+        )
     
     def build(self):
         """Constrói a interface de consultas"""
@@ -33,7 +65,7 @@ class ConsultasTab(BaseTab):
         )
         
         # Inicializar com primeira view
-        self.consulta_content_container.content = self.criar_consulta_equipamento()
+        self.consulta_content_container.content = self._montar_view_equipamento()
         
         return ft.Container(
             content=ft.Column(
@@ -50,13 +82,13 @@ class ConsultasTab(BaseTab):
     def ir_para_equipamento(self, e):
         """Navega para busca por equipamento"""
         self.consulta_view = "equipamento"
-        self.consulta_content_container.content = self.criar_consulta_equipamento()
+        self.consulta_content_container.content = self._montar_view_equipamento()
         self.page.update()
     
     def ir_para_cliente(self, e):
         """Navega para busca por cliente"""
         self.consulta_view = "cliente"
-        self.consulta_content_container.content = self.criar_consulta_cliente()
+        self.consulta_content_container.content = self._montar_view_cliente()
         self.page.update()
     
     def ir_para_relatorios(self, e):
@@ -65,26 +97,8 @@ class ConsultasTab(BaseTab):
         self.consulta_content_container.content = self.criar_consulta_relatorios()
         self.page.update()
     
-    def criar_consulta_equipamento(self):
-        """Cria a view de busca por equipamento"""
-        # Campo de busca
-        self.equip_search_field = ft.TextField(
-            label="Número de Série",
-            hint_text="Digite o número de série...",
-            expand=True,
-            on_submit=lambda e: self.buscar_equipamento_consulta(),
-        )
-        
-        # Resultado
-        self.equip_result_container = ft.Container(
-            content=ft.Text(
-                "Digite um número de série e clique em Buscar",
-                size=14,
-                color=ft.Colors.GREY_400,
-            ),
-            expand=True,
-        )
-        
+    def _montar_view_equipamento(self):
+        """Monta o layout de busca por equipamento reutilizando campos existentes"""
         return ft.Container(
             content=ft.Column(
                 [
@@ -105,6 +119,10 @@ class ConsultasTab(BaseTab):
             padding=20,
             expand=True,
         )
+
+    def criar_consulta_equipamento(self):
+        """Cria a view de busca por equipamento (mantido para compatibilidade)"""
+        return self._montar_view_equipamento()
     
     def buscar_equipamento_consulta(self):
         """Busca equipamento por número de série"""
@@ -217,26 +235,8 @@ Data Garantia: {equip['data_garantia'] or '-'}"""
         
         self.page.update()
     
-    def criar_consulta_cliente(self):
-        """Cria a view de busca por cliente"""
-        # Campo de busca - responsivo
-        self.cliente_search_field = ft.TextField(
-            label="Buscar Cliente",
-            hint_text="Digite nome, telefone ou documento...",
-            expand=True,
-            on_submit=lambda e: self.buscar_cliente_consulta(),
-        )
-        
-        # Resultado
-        self.cliente_result_container = ft.Container(
-            content=ft.Text(
-                "Digite nome, telefone ou documento e clique em Buscar",
-                size=14,
-                color=ft.Colors.GREY_400,
-            ),
-            expand=True,
-        )
-        
+    def _montar_view_cliente(self):
+        """Monta o layout de busca por cliente reutilizando campos existentes"""
         return ft.Container(
             content=ft.Column(
                 [
@@ -257,6 +257,10 @@ Data Garantia: {equip['data_garantia'] or '-'}"""
             padding=20,
             expand=True,
         )
+
+    def criar_consulta_cliente(self):
+        """Cria a view de busca por cliente (mantido para compatibilidade)"""
+        return self._montar_view_cliente()
     
     def buscar_cliente_consulta(self):
         """Busca cliente e seus equipamentos"""
