@@ -219,8 +219,8 @@ class ClientesTab(BaseTab):
                     self.cliente_status,
                     ft.Row(
                         [
-                            ft.FilledButton("💾 Salvar", on_click=self.confirmar_salvar_cliente, expand=True),
-                            ft.FilledButton("🔄 Limpar", on_click=self.limpar_form, expand=True),
+                            ft.FilledButton("💾 Salvar", on_click=self.confirmar_salvar_cliente, expand=True, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
+                            ft.FilledButton("🔄 Limpar", on_click=self.limpar_form, expand=True, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
                         ],
                         spacing=10,
                     ),
@@ -247,8 +247,8 @@ class ClientesTab(BaseTab):
                             ft.Container(
                                 content=ft.Row(
                                     [
-                                        ft.FilledButton("🔍 Buscar", on_click=lambda e: self.buscar_clientes(), expand=True),
-                                        ft.FilledButton("🔄 Todos", on_click=lambda e: self.carregar_clientes(), expand=True),
+                                        ft.FilledButton("🔍 Buscar", on_click=lambda e: self.buscar_clientes(), expand=True, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
+                                        ft.FilledButton("🔄 Todos", on_click=lambda e: self.carregar_clientes(), expand=True, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
                                     ],
                                     spacing=10,
                                 ),
@@ -305,7 +305,7 @@ class ClientesTab(BaseTab):
             content=ft.Text(mensagem),
             actions=[
                 ft.TextButton("Cancelar", on_click=cancelar),
-                ft.FilledButton("Confirmar", on_click=confirmar),
+                ft.FilledButton("Confirmar", on_click=confirmar, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
             ],
         )
         

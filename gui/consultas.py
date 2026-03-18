@@ -54,9 +54,9 @@ class ConsultasTab(BaseTab):
         subnav = ft.Container(
             content=ft.Row(
                 [
-                    ft.FilledButton("📦 Por Equipamento", on_click=self.ir_para_equipamento),
-                    ft.FilledButton("👤 Por Cliente", on_click=self.ir_para_cliente),
-                    ft.FilledButton("📊 Relatórios", on_click=self.ir_para_relatorios),
+                    ft.FilledButton("📦 Por Equipamento", on_click=self.ir_para_equipamento, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
+                    ft.FilledButton("👤 Por Cliente", on_click=self.ir_para_cliente, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
+                    ft.FilledButton("📊 Relatórios", on_click=self.ir_para_relatorios, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
                 ],
                 spacing=10,
             ),
@@ -106,7 +106,7 @@ class ConsultasTab(BaseTab):
                     ft.Row(
                         [
                             self.equip_search_field,
-                            ft.FilledButton("🔍 Buscar", on_click=lambda e: self.buscar_equipamento_consulta()),
+                            ft.FilledButton("🔍 Buscar", on_click=lambda e: self.buscar_equipamento_consulta(), style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
                         ],
                         spacing=10,
                     ),
@@ -244,7 +244,7 @@ Data Garantia: {equip['data_garantia'] or '-'}"""
                     ft.Row(
                         [
                             self.cliente_search_field,
-                            ft.FilledButton("🔍 Buscar", on_click=lambda e: self.buscar_cliente_consulta()),
+                            ft.FilledButton("🔍 Buscar", on_click=lambda e: self.buscar_cliente_consulta(), style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
                         ],
                         spacing=10,
                     ),
@@ -471,14 +471,14 @@ Data de Cadastro: {cliente['data_cadastro']}"""
                     ft.Text("Exportar Dados", size=16, weight=ft.FontWeight.BOLD),
                     ft.Row(
                         [
-                            ft.FilledButton("📄 Exportar Clientes (CSV)", on_click=lambda e: self.exportar_clientes_csv()),
-                            ft.FilledButton("📄 Exportar Equipamentos (CSV)", on_click=lambda e: self.exportar_equipamentos_csv()),
-                            ft.FilledButton("📄 Exportar Histórico (CSV)", on_click=lambda e: self.exportar_historico_csv()),
+                            ft.FilledButton("📄 Exportar Clientes (CSV)", on_click=lambda e: self.exportar_clientes_csv(), style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
+                            ft.FilledButton("📄 Exportar Equipamentos (CSV)", on_click=lambda e: self.exportar_equipamentos_csv(), style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
+                            ft.FilledButton("📄 Exportar Histórico (CSV)", on_click=lambda e: self.exportar_historico_csv(), style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
                         ],
                         spacing=10,
                     ),
                     self.relatorio_status,
-                    ft.FilledButton("🔄 Atualizar Estatísticas", on_click=lambda e: self.atualizar_estatisticas_consulta()),
+                    ft.FilledButton("🔄 Atualizar Estatísticas", on_click=lambda e: self.atualizar_estatisticas_consulta(), style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
                 ],
                 spacing=15,
                 scroll=ft.ScrollMode.AUTO,

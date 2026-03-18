@@ -114,7 +114,7 @@ class BaseTab:
         Cada botão usa icone como texto, tooltip como tooltip e callback como on_click.
         """
         botoes = [
-            ft.TextButton(text=icone, tooltip=tooltip, on_click=callback)
+            ft.TextButton(content=ft.Text(icone), tooltip=tooltip, on_click=callback)
             for icone, tooltip, callback in acoes
         ]
         return ft.Row(controls=botoes)

@@ -179,8 +179,8 @@ class MovimentacoesTab(BaseTab):
                     self.movimentacao_status,
                     ft.Row(
                         [
-                            ft.FilledButton("✅ Registrar", on_click=self.registrar_movimentacao, expand=True),
-                            ft.FilledButton("🔄 Limpar", on_click=self.limpar_form, expand=True),
+                            ft.FilledButton("✅ Registrar", on_click=self.registrar_movimentacao, expand=True, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
+                            ft.FilledButton("🔄 Limpar", on_click=self.limpar_form, expand=True, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
                         ],
                         spacing=10,
                     ),
@@ -209,7 +209,7 @@ class MovimentacoesTab(BaseTab):
                                 col={"sm": 12, "md": 3, "lg": 3},
                             ),
                             ft.Container(
-                                content=ft.FilledButton("🔄 Atualizar", on_click=lambda e: self.carregar_movimentacoes(), expand=True),
+                                content=ft.FilledButton("🔄 Atualizar", on_click=lambda e: self.carregar_movimentacoes(), expand=True, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
                                 col={"sm": 12, "md": 5, "lg": 5},
                             ),
                         ],

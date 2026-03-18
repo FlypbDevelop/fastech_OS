@@ -30,9 +30,9 @@ class ConfiguracoesTab(BaseTab):
         subnav = ft.Container(
             content=ft.Row(
                 [
-                    ft.FilledButton("💾 Backup", on_click=self.ir_para_backup),
-                    ft.FilledButton("⚙️ Geral", on_click=self.ir_para_geral),
-                    ft.FilledButton("ℹ️ Sobre", on_click=self.ir_para_sobre),
+                    ft.FilledButton("💾 Backup", on_click=self.ir_para_backup, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
+                    ft.FilledButton("⚙️ Geral", on_click=self.ir_para_geral, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
+                    ft.FilledButton("ℹ️ Sobre", on_click=self.ir_para_sobre, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
                 ],
                 spacing=10,
             ),
