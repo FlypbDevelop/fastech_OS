@@ -1,6 +1,7 @@
 """
 Classe base para as abas do sistema
 """
+import json
 import flet as ft
 
 
@@ -26,6 +27,15 @@ class BaseTab:
         self.page = page
         self.db = db
         self.config = config
+
+    def salvar_config(self) -> bool:
+        """Persiste self.config no arquivo config.json"""
+        try:
+            with open('config.json', 'w', encoding='utf-8') as f:
+                json.dump(self.config, f, indent=4, ensure_ascii=False)
+            return True
+        except Exception:
+            return False
 
     def get_adaptive_color(self, dark_color, light_color):
         """Retorna cor adaptativa baseada no tema atual"""
