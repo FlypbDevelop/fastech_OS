@@ -3,5 +3,8 @@
     "backup_dias": 7,
     "backup_pasta": "backups",
     "tema": "claro",
-    "usuario_padrao": "Técnico"
+    "usuario_padrao": "Técnico",
+    "status_equipamento_custom": [
+        "Com Terceirizado"
+    ]
 }

@@ -208,8 +208,11 @@ class Database:
         return dict(row) if row else None
     
     def buscar_equipamento_por_serie(self, numero_serie: str) -> Optional[Dict]:
-        """Busca um equipamento pelo número de série"""
-        self.cursor.execute("SELECT * FROM equipamentos WHERE numero_serie = ?", (numero_serie,))
+        """Busca um equipamento pelo número de série (case-insensitive)"""
+        self.cursor.execute(
+            "SELECT * FROM equipamentos WHERE UPPER(numero_serie) = UPPER(?)",
+            (numero_serie,)
+        )
         row = self.cursor.fetchone()
         return dict(row) if row else None
     
@@ -252,6 +255,17 @@ class Database:
         except sqlite3.IntegrityError:
             return False
     
+    def deletar_equipamento(self, equipamento_id: int) -> bool:
+        """Deleta um equipamento e seus registros relacionados"""
+        try:
+            self.cursor.execute("DELETE FROM historico_posse WHERE equipamento_id = ?", (equipamento_id,))
+            self.cursor.execute("DELETE FROM servicos WHERE equipamento_id = ?", (equipamento_id,))
+            self.cursor.execute("DELETE FROM equipamentos WHERE id = ?", (equipamento_id,))
+            self.conn.commit()
+            return True
+        except Exception:
+            return False
+
     def atualizar_status_equipamento(self, equipamento_id: int, novo_status: str) -> bool:
         """Atualiza o status atual de um equipamento"""
         return self.atualizar_equipamento(equipamento_id, status_atual=novo_status)
