@@ -1,81 +1,58 @@
-# 📘 Documentação Técnica - FastTech Control
+# Documentação Técnica - FastTech Control
 
-## 📊 Informações do Projeto
+## Visão Geral
 
-**Nome**: FastTech Control  
+Sistema de gestão de equipamentos e clientes para controle interno de ativos de TI. Interface gráfica moderna desenvolvida com Flet, banco de dados SQLite, arquitetura modular com herança.
+
 **Versão**: 1.0.0  
-**Data**: 11/02/2026  
-**Linguagem**: Python 3.8+  
-**Framework GUI**: Flet 0.80.5  
-**Banco de Dados**: SQLite  
+**Stack**: Python 3.8+ | Flet >= 0.21.0 | SQLite
 
 ---
 
-## 🏗️ Arquitetura do Sistema
-
-### Estrutura de Arquivos
-
-```
-FastTech Control/
-├── app.py (360 linhas)           # Orquestração principal
-├── database.py                    # Camada de dados
-├── models.py                      # Modelos e constantes
-├── config.json                    # Configurações do usuário
-├── fastech.db                     # Banco de dados SQLite
-├── requirements.txt               # Dependências
-│
-├── gui/                          # Módulos de interface
-│   ├── __init__.py
-│   ├── base.py                   # Classe base (35 linhas)
-│   ├── dashboard.py              # Dashboard (180 linhas)
-│   ├── clientes.py               # Gestão de clientes (300 linhas)
-│   ├── equipamentos.py           # Gestão de equipamentos (468 linhas)
-│   ├── movimentacoes.py          # Movimentações (367 linhas)
-│   ├── consultas.py              # Consultas e relatórios (627 linhas)
-│   └── configuracoes.py          # Configurações (332 linhas)
-│
-├── utils/                        # Utilitários
-│   ├── __init__.py
-│   ├── validators.py             # Validações (CPF, CNPJ, etc)
-│   └── backup.py                 # Sistema de backup
-│
-└── backups/                      # Backups automáticos
-    └── fastech_backup_*.db
-```
-
----
-
-## 🔧 Arquitetura Modular
+## Arquitetura Modular
 
 ### Padrão de Design
 
-O sistema utiliza uma arquitetura modular baseada em:
-- **Separação de responsabilidades**: Cada módulo tem uma função específica
-- **Herança**: Todos os módulos GUI herdam de `BaseTab`
-- **Orquestração centralizada**: `app.py` gerencia navegação e estado global
+O sistema utiliza herança para padronizar comportamento entre abas:
+
+```
+BaseTab (gui/base.py)
+├── DashboardTab
+├── ClientesTab
+├── EquipamentosTab
+├── MovimentacoesTab
+├── ConsultasTab
+└── ConfiguracoesTab
+```
 
 ### Classe Base (BaseTab)
 
+Todas as abas herdam de `BaseTab`, que fornece:
+
+- **Design tokens**: `BORDER_RADIUS`, `SPACING`, `PADDING`, tamanhos de fonte, cores
+- **Cores adaptativas**: `get_adaptive_color()`, `get_bg_color()`, `get_text_color()`
+- **Helpers de UI**: `botao_primario()`, `criar_container_secao()`, `criar_dialogo_confirmacao()`, `criar_linha_tabela_acoes()`
+- **Persistência**: `salvar_config()` para gravar config.json
+
 ```python
 class BaseTab:
-    """Classe base para todas as abas"""
-    
+    BORDER_RADIUS = 10
+    SPACING = 10
+    PADDING = 20
+    PRIMARY_COLOR = ft.Colors.BLUE_700
+
     def __init__(self, page: ft.Page, db, config):
         self.page = page
         self.db = db
         self.config = config
-    
-    def get_adaptive_color(self, dark_color, light_color):
-        """Retorna cor adaptativa baseada no tema"""
-        
+
     def build(self):
-        """Método abstrato - implementado pelas subclasses"""
         raise NotImplementedError()
 ```
 
-### Módulos GUI
+### Padrão de Módulo GUI
 
-Cada módulo segue o padrão:
+Cada módulo em `gui/` segue o padrão:
 
 ```python
 from gui.base import BaseTab
@@ -83,356 +60,263 @@ from gui.base import BaseTab
 class NomeTab(BaseTab):
     def __init__(self, page, db, config):
         super().__init__(page, db, config)
-        # Inicialização específica
-    
-    def build(self):
-        """Constrói a interface"""
-        # Retorna ft.Container com a interface
-```
 
----
-
-## 🗄️ Camada de Dados
-
-### Database.py
-
-Gerencia todas as operações com SQLite:
-
-**Principais Métodos**:
-- `criar_tabelas()`: Cria estrutura do banco
-- `adicionar_cliente()`: Insere novo cliente
-- `buscar_clientes()`: Busca com filtros
-- `adicionar_equipamento()`: Insere equipamento
-- `registrar_movimentacao()`: Registra histórico
-- `get_estatisticas()`: Retorna estatísticas do sistema
-
-### Estrutura do Banco
-
-```sql
--- Tabela de Clientes
-CREATE TABLE clientes (
-    id INTEGER PRIMARY KEY,
-    nome TEXT NOT NULL,
-    telefone TEXT NOT NULL,
-    email TEXT,
-    documento TEXT UNIQUE,
-    setor TEXT,
-    endereco TEXT,
-    data_cadastro TEXT
-)
-
--- Tabela de Equipamentos
-CREATE TABLE equipamentos (
-    id INTEGER PRIMARY KEY,
-    numero_serie TEXT UNIQUE NOT NULL,
-    tipo TEXT NOT NULL,
-    marca TEXT,
-    modelo TEXT,
-    status_atual TEXT,
-    data_registro TEXT,
-    valor_estimado REAL,
-    data_garantia TEXT
-)
-
--- Tabela de Histórico
-CREATE TABLE historico_posse (
-    id INTEGER PRIMARY KEY,
-    equipamento_id INTEGER,
-    cliente_id INTEGER,
-    acao TEXT,
-    data_inicio TEXT,
-    data_fim TEXT,
-    usuario_responsavel TEXT,
-    observacoes TEXT,
-    FOREIGN KEY (equipamento_id) REFERENCES equipamentos(id),
-    FOREIGN KEY (cliente_id) REFERENCES clientes(id)
-)
-```
-
----
-
-## 🎨 Sistema de Temas
-
-### Implementação
-
-O sistema suporta temas claro e escuro com aplicação em tempo real:
-
-```python
-# Configuração do tema
-if self.config['tema'] == 'claro':
-    self.page.theme_mode = ft.ThemeMode.LIGHT
-else:
-    self.page.theme_mode = ft.ThemeMode.DARK
-
-# Cores adaptativas
-def get_adaptive_color(self, dark_color, light_color):
-    if self.page.theme_mode == ft.ThemeMode.LIGHT:
-        return light_color
-    return dark_color
-```
-
-### Paleta de Cores
-
-**Tema Escuro**:
-- Background: `BLUE_GREY_900`
-- Texto: `WHITE`
-- Texto secundário: `GREY_400`
-
-**Tema Claro**:
-- Background: `GREY_100`
-- Texto: `BLACK`
-- Texto secundário: `GREY_700`
-
----
-
-## 🔄 Sistema de Backup
-
-### Funcionalidades
-
-1. **Backup Automático**: Executado ao iniciar a aplicação
-2. **Backup Manual**: Botão na aba Configurações
-3. **Limpeza Automática**: Remove backups antigos (configurável)
-4. **Restauração**: Restaura backup anterior com segurança
-
-### Implementação
-
-```python
-# Backup automático
-if self.config['backup_automatico']:
-    criar_backup('fastech.db', 'backups')
-    limpar_backups_antigos('backups', dias=self.config['backup_dias'])
-
-# Formato do arquivo
-fastech_backup_YYYYMMDD_HHMMSS.db
-```
-
----
-
-## ✅ Sistema de Validações
-
-### Validadores Implementados
-
-**CPF**:
-```python
-def validar_cpf(cpf: str) -> bool:
-    # Remove formatação
-    # Valida dígitos verificadores
-    # Rejeita CPFs conhecidos como inválidos
-```
-
-**CNPJ**:
-```python
-def validar_cnpj(cnpj: str) -> bool:
-    # Remove formatação
-    # Valida dígitos verificadores
-    # Rejeita CNPJs conhecidos como inválidos
-```
-
-**Telefone**:
-```python
-def validar_telefone(telefone: str) -> bool:
-    # Formato: (XX) XXXXX-XXXX ou (XX) XXXX-XXXX
-    # Valida DDD e número
-```
-
-**E-mail**:
-```python
-def validar_email(email: str) -> bool:
-    # Validação de formato padrão
-    # Verifica @ e domínio
-```
-
----
-
-## 🔐 Segurança e Integridade
-
-### Validações de Entrada
-- ✅ CPF/CNPJ validados antes de salvar
-- ✅ Número de série único por equipamento
-- ✅ Documento único por cliente
-- ✅ Campos obrigatórios verificados
-
-### Integridade Referencial
-- ✅ Foreign keys no banco de dados
-- ✅ Cascata de exclusões configurada
-- ✅ Validação de relacionamentos
-
-### Confirmações
-- ✅ Diálogos de confirmação para exclusões
-- ✅ Backup automático antes de restauração
-- ✅ Validação de dados antes de operações críticas
-
----
-
-## 📊 Fluxo de Dados
-
-### Cadastro de Cliente
-```
-Interface (clientes.py)
-    ↓
-Validação (validators.py)
-    ↓
-Database (database.py)
-    ↓
-SQLite (fastech.db)
-```
-
-### Movimentação de Equipamento
-```
-Interface (movimentacoes.py)
-    ↓
-Validação de status
-    ↓
-Database.registrar_movimentacao()
-    ↓
-Atualiza histórico_posse
-    ↓
-Atualiza status_atual do equipamento
-```
-
-### Consulta e Relatório
-```
-Interface (consultas.py)
-    ↓
-Database.buscar_*()
-    ↓
-Processamento de dados
-    ↓
-Exibição ou Exportação CSV
-```
-
----
-
-## 🚀 Performance e Otimizações
-
-### Otimizações Implementadas
-
-1. **Lazy Loading**: Módulos carregados sob demanda
-2. **Índices no Banco**: Campos de busca indexados
-3. **Cache de Configurações**: Config carregado uma vez
-4. **Queries Otimizadas**: JOINs eficientes
-5. **Supressão de Warnings**: Avisos de depreciação removidos
-
-### Métricas
-
-- **Tempo de inicialização**: < 2 segundos
-- **Tamanho do app.py**: 360 linhas (redução de 85.5%)
-- **Módulos independentes**: 7 arquivos
-- **Linhas totais de código GUI**: ~2.300 linhas
-
----
-
-## 🧪 Testes e Validação
-
-### Testes Manuais Realizados
-
-- ✅ CRUD completo de clientes
-- ✅ CRUD completo de equipamentos
-- ✅ Registro de movimentações
-- ✅ Consultas e filtros
-- ✅ Exportação CSV
-- ✅ Backup e restauração
-- ✅ Troca de tema em tempo real
-- ✅ Validações de CPF/CNPJ
-- ✅ Integridade referencial
-
-### Casos de Teste
-
-1. **Cadastro duplicado**: Sistema rejeita documentos duplicados
-2. **Exclusão com relacionamento**: Cascata funciona corretamente
-3. **Backup corrompido**: Sistema valida antes de restaurar
-4. **Campos vazios**: Validação impede salvamento
-5. **Número de série duplicado**: Sistema rejeita
-
----
-
-## 📈 Histórico de Refatoração
-
-### Versão Inicial (2492 linhas)
-- Código monolítico em `app.py`
-- Difícil manutenção
-- Código duplicado
-
-### Refatoração Modular (360 linhas)
-- ✅ Separação em módulos
-- ✅ Remoção de código duplicado (445 linhas)
-- ✅ Padrão de herança com `BaseTab`
-- ✅ Imports organizados
-- ✅ Nomenclatura limpa (sem sufixo `_tab`)
-
-### Redução Total
-- **Antes**: 2492 linhas no app.py
-- **Depois**: 360 linhas no app.py
-- **Redução**: 85.5%
-
----
-
-## 🔧 Manutenção e Extensão
-
-### Adicionar Nova Aba
-
-1. Criar arquivo `gui/nova_aba.py`:
-```python
-from gui.base import BaseTab
-
-class NovaAbaTab(BaseTab):
     def build(self):
         return ft.Container(...)
 ```
 
-2. Importar em `app.py`:
-```python
-from gui.nova_aba import NovaAbaTab
-```
+### Orquestração (app.py)
 
-3. Adicionar método de criação:
-```python
-def criar_nova_aba(self):
-    tab = NovaAbaTab(self.page, self.db, self.config)
-    return tab.build()
-```
-
-4. Adicionar botão de navegação
-
-### Adicionar Nova Validação
-
-1. Adicionar função em `utils/validators.py`:
-```python
-def validar_novo_campo(valor: str) -> bool:
-    # Lógica de validação
-    return True/False
-```
-
-2. Importar onde necessário:
-```python
-from utils.validators import validar_novo_campo
-```
-
-### Adicionar Nova Tabela
-
-1. Atualizar `database.py`:
-```python
-def criar_tabelas(self):
-    self.cursor.execute("""
-        CREATE TABLE IF NOT EXISTS nova_tabela (
-            id INTEGER PRIMARY KEY,
-            campo TEXT
-        )
-    """)
-```
-
-2. Adicionar métodos CRUD correspondentes
+`FastTechApp` em `app.py` gerencia:
+- Inicialização do banco de dados e configurações
+- Navegação entre abas (swapping de conteúdo no `content_container`)
+- Backup automático na inicialização
+- Limpeza de backups antigos
+- Header e barra de navegação
 
 ---
 
-## 📝 Convenções de Código
+## Banco de Dados
+
+### Tabelas
+
+#### clientes
+```sql
+CREATE TABLE clientes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tipo_cliente TEXT DEFAULT 'Cliente Final',
+    nome TEXT NOT NULL,
+    telefone TEXT UNIQUE NOT NULL,
+    email TEXT,
+    endereco TEXT,
+    documento TEXT UNIQUE,
+    setor TEXT,
+    regiao TEXT,
+    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+```
+
+#### equipamentos
+```sql
+CREATE TABLE equipamentos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    numero_serie TEXT UNIQUE NOT NULL,
+    tipo TEXT NOT NULL,
+    marca TEXT,
+    modelo TEXT,
+    data_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status_atual TEXT DEFAULT 'Em Estoque',
+    data_garantia DATE,
+    valor_estimado REAL,
+    observacoes TEXT
+)
+```
+
+#### historico_posse
+```sql
+CREATE TABLE historico_posse (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    equipamento_id INTEGER NOT NULL,
+    cliente_id INTEGER,
+    data_inicio TIMESTAMP NOT NULL,
+    data_fim TIMESTAMP,
+    acao TEXT NOT NULL,
+    usuario_responsavel TEXT NOT NULL,
+    observacoes TEXT,
+    FOREIGN KEY (equipamento_id) REFERENCES equipamentos(id) ON DELETE CASCADE,
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE SET NULL
+)
+```
+
+#### servicos_equipamentos
+```sql
+CREATE TABLE servicos_equipamentos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    equipamento_id INTEGER NOT NULL,
+    cliente_id INTEGER,
+    data_servico TIMESTAMP NOT NULL,
+    tipo_servico TEXT NOT NULL,
+    descricao_problema TEXT,
+    servico_realizado TEXT NOT NULL,
+    situacao_final TEXT NOT NULL,
+    tecnico_responsavel TEXT NOT NULL,
+    valor_servico REAL,
+    observacoes TEXT,
+    data_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (equipamento_id) REFERENCES equipamentos(id) ON DELETE CASCADE,
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE SET NULL
+)
+```
+
+### Relacionamentos
+
+- **clientes → equipamentos**: Via `historico_posse` (N:N lógico)
+- **equipamentos → historico_posse**: 1:N (cascade delete)
+- **equipamentos → servicos_equipamentos**: 1:N (cascade delete)
+- **clientes → servicos_equipamentos**: 1:N (set null on delete)
+
+### Migração Automática
+
+O `database.py` executa `ALTER TABLE` silencioso para adicionar colunas novas (`tipo_cliente`, `regiao`), garantindo retrocompatibilidade.
+
+---
+
+## Camada de Dados (database.py)
+
+### Métodos Principais
+
+| Método | Descrição |
+|--------|-----------|
+| `inserir_cliente()` | Cadastra cliente com validação de integridade |
+| `buscar_clientes(termo)` | Busca por nome, telefone ou documento |
+| `atualizar_cliente(id, **kwargs)` | Atualiza campos específicos (whitelist contra SQL injection) |
+| `deletar_cliente(id)` | Remove apenas se não tiver equipamentos ativos |
+| `inserir_equipamento()` | Cadastra com número de série único |
+| `buscar_equipamento_por_serie(serie)` | Busca case-insensitive por serial |
+| `inserir_historico()` | Registra movimentação com data_inicio |
+| `finalizar_historico(id)` | Preenche data_fim (encerra posse) |
+| `inserir_servico()` | Registra serviço realizado no equipamento |
+| `buscar_servicos_equipamento(id)` | Lista histórico de serviços |
+| `get_estatisticas()` | Retorna totais e contagens por status/tipo |
+
+### Segurança
+
+- Campos permitidos em `atualizar_*()` são definidos em whitelist (`campos_permitidos`)
+- Foreign keys mantêm integridade referencial
+- `ON DELETE CASCADE` em equipamentos/serviços
+- `ON DELETE SET NULL` em cliente_id opcional
+
+---
+
+## Módulos GUI
+
+### Dashboard (`gui/dashboard.py`)
+- Cards com 3 níveis de hierarquia visual (180px, 150px, 120px)
+- Sistema de 3 cores: PRIMARY (azul escuro), SECONDARY (azul claro), ACCENT (amarelo)
+- Hover com elevação e scale
+- Calendário integrado
+- Estatísticas em tempo real
+
+### Clientes (`gui/clientes.py`)
+- Dois tipos: **Cliente Final** (CPF/CNPJ, setor) e **Terceirizado** (WhatsApp, empresa, região)
+- Formulário dinâmico que muda conforme tipo selecionado
+- Confirmações para editar, salvar e excluir
+- Validação por tipo (telefone vs WhatsApp)
+
+### Equipamentos (`gui/equipamentos.py`)
+- Navegação por 3 views: Buscar por Serial, Cadastrar, Registrar Serviço
+- Busca com foco automático
+- Cadastro independente (sem cliente vinculado)
+- Registro de serviços com datas retroativas
+- Tabela de histórico por equipamento
+
+### Movimentações (`gui/movimentacoes.py`)
+- Registro de entregas, devoluções e manutenções
+- Atualização automática de status do equipamento
+- Histórico completo com responsável e observações
+
+### Consultas (`gui/consultas.py`)
+- Busca de equipamentos por múltiplos critérios
+- Busca de clientes
+- Exportação para CSV
+- Sub-abas para consulta de cliente, equipamento e relatórios
+
+### Configurações (`gui/configuracoes.py`)
+- Backup automático e limpeza de backups antigos
+- Tema (claro/escuro)
+- Usuário padrão para movimentações
+- Lista de backups com opção de restaurar/deletar
+
+---
+
+## Sistema de Temas
+
+### Implementação
+
+```python
+if self.config['tema'] == 'claro':
+    self.page.theme_mode = ft.ThemeMode.LIGHT
+else:
+    self.page.theme_mode = ft.ThemeMode.DARK
+```
+
+### Paleta de Cores Adaptativa
+
+| Elemento | Tema Escuro | Tema Claro |
+|----------|-------------|------------|
+| Fundo | `BLUE_GREY_900` | `GREY_100` |
+| Texto | `WHITE` | `BLACK` |
+| Texto secundário | `GREY_400` | `GREY_700` |
+
+### Design Tokens (BaseTab)
+
+```python
+BORDER_RADIUS = 10
+SPACING = 10
+PADDING = 20
+BODY_SIZE = 14
+TITLE_SIZE = 18
+SMALL_SIZE = 12
+CAPTION_SIZE = 10
+H1_SIZE = 32
+H2_SIZE = 24
+PRIMARY_COLOR = ft.Colors.BLUE_700
+SECONDARY_COLOR = ft.Colors.BLUE_400
+ACCENT_COLOR = ft.Colors.AMBER_600
+```
+
+---
+
+## Sistema de Backup
+
+### Gerenciador (utils/backup.py)
+
+```python
+class BackupManager:
+    def __init__(self, db_path="fastech.db", backup_dir="backups")
+    def criar_backup(nome_customizado=None) -> str
+    def listar_backups() -> List[dict]
+    def restaurar_backup(backup_path) -> bool
+    def deletar_backup(backup_path) -> bool
+    def limpar_backups_antigos(dias=30) -> int
+```
+
+### Comportamento
+
+1. **Backup automático**: Executado ao iniciar se `backup_automatico: true` no config.json
+2. **Limpeza automática**: Remove backups mais antigos que `backup_dias` dias
+3. **Restauração segura**: Cria backup do banco atual antes de restaurar
+4. **Formato do arquivo**: `fastech_backup_YYYYMMDD_HHMMSS.db`
+
+---
+
+## Validações (utils/validators.py)
+
+| Função | Validação | Obrigatório |
+|--------|-----------|-------------|
+| `validar_cpf(cpf)` | 11 dígitos, dígitos verificadores, rejeita sequências iguais | Não |
+| `validar_cnpj(cnpj)` | 14 dígitos, dígitos verificadores, rejeita sequências iguais | Não |
+| `validar_documento(doc)` | Auto-detecta CPF (11) ou CNPJ (14) | Não |
+| `validar_telefone(tel)` | 10-11 dígitos, DDD válido (11-99) | Sim |
+| `validar_email(email)` | Formato padrão com @ e domínio | Não |
+| `validar_numero_serie(serie)` | Mínimo 3 caracteres | Sim |
+
+### Funções de Formatação
+
+- `formatar_cpf()` → XXX.XXX.XXX-XX
+- `formatar_cnpj()` → XX.XXX.XXX/XXXX-XX
+- `formatar_telefone()` → (XX) XXXXX-XXXX
+
+---
+
+## Convenções de Código
 
 ### Nomenclatura
 
-- **Arquivos**: snake_case (ex: `clientes.py`)
-- **Classes**: PascalCase (ex: `ClientesTab`)
-- **Métodos**: snake_case (ex: `criar_interface()`)
-- **Constantes**: UPPER_CASE (ex: `TIPOS_EQUIPAMENTO`)
+- **Arquivos**: `snake_case` (ex: `clientes.py`)
+- **Classes**: `PascalCase` (ex: `ClientesTab`)
+- **Métodos**: `snake_case` (ex: `criar_interface()`)
+- **Constantes**: `UPPER_CASE` (ex: `TIPOS_EQUIPAMENTO`)
 
 ### Estrutura de Métodos
 
@@ -445,59 +329,147 @@ def metodo_exemplo(self):
     self.page.update()
 ```
 
-### Comentários
+### Constantes (models.py)
 
-- Docstrings em todos os métodos públicos
-- Comentários inline para lógica complexa
-- Seções separadas por comentários descritivos
+```python
+class StatusEquipamento:
+    EM_ESTOQUE = "Em Estoque"
+    COM_CLIENTE = "Com o Cliente"
+    EM_REPARO = "Em Reparo"
+    EM_MANUTENCAO = "Em Manutenção"
 
----
+class TipoEquipamento:
+    NOTEBOOK = "Notebook"
+    DESKTOP = "Desktop"
+    IMPRESSORA = "Impressora"
+    MONITOR = "Monitor"
+    # ... 10 tipos no total
 
-## 🐛 Troubleshooting
-
-### Problemas Comuns
-
-**Erro: "No module named 'flet'"**
-```bash
-pip install flet==0.80.5
+class AcaoHistorico:
+    ENTREGA = "Entrega"
+    DEVOLUCAO = "Devolução"
+    MANUTENCAO = "Manutenção"
+    # ... 7 ações no total
 ```
 
-**Erro: "Database is locked"**
-- Fechar outras instâncias da aplicação
-- Verificar permissões do arquivo
-
-**Tema não aplica**
-- Verificar se salvou as configurações
-- Tema aplica imediatamente (sem reiniciar)
-
-**Backup falha**
-- Verificar permissões da pasta `backups/`
-- Verificar espaço em disco
-
 ---
 
-## 📚 Dependências
+## Como Estender o Sistema
 
-```txt
-flet==0.80.5
+### Adicionar Nova Aba
+
+1. Criar `gui/nova_aba.py`:
+```python
+from gui.base import BaseTab
+
+class NovaAbaTab(BaseTab):
+    def build(self):
+        return ft.Container(...)
 ```
 
-**Bibliotecas Padrão Python**:
-- sqlite3
-- json
-- datetime
-- shutil
-- os
-- warnings
-- calendar
-- csv
+2. Importar em `app.py` e adicionar método de criação
+3. Adicionar botão de navegação na barra lateral
+
+### Adicionar Nova Validação
+
+1. Adicionar função em `utils/validators.py`:
+```python
+def validar_novo_campo(valor: str) -> Tuple[bool, str]:
+    # Lógica de validação
+    return True, ""
+```
+
+2. Importar e usar no módulo GUI correspondente
+
+### Adicionar Nova Tabela
+
+1. Adicionar `CREATE TABLE` em `database.py` → `create_tables()`
+2. Implementar métodos CRUD (inserir, buscar, atualizar, deletar)
+3. Usar whitelist de campos permitidos em updates
 
 ---
 
-## 🎯 Roadmap Futuro
+## Fluxo de Dados
+
+### Cadastro de Cliente
+```
+Interface (clientes.py)
+    ↓
+Validação (validators.py)
+    ↓
+Database.inserir_cliente()
+    ↓
+SQLite (fastech.db)
+```
+
+### Movimentação de Equipamento
+```
+Interface (movimentacoes.py)
+    ↓
+Database.inserir_historico()
+    ↓
+Database.atualizar_status_equipamento()
+    ↓
+SQLite (historico_posse + equipamentos)
+```
+
+### Registro de Serviço
+```
+Interface (equipamentos.py)
+    ↓
+Validação de campos obrigatórios
+    ↓
+Database.inserir_servico()
+    ↓
+SQLite (servicos_equipamentos)
+```
+
+---
+
+## Troubleshooting
+
+| Problema | Solução |
+|----------|---------|
+| `No module named 'flet'` | `pip install flet>=0.21.0` |
+| `Database is locked` | Fechar outras instâncias da aplicação |
+| Tema não aplica | Verificar se salvou em Configurações |
+| Backup falha | Verificar permissões da pasta `backups/` |
+| Python < 3.8 | Atualizar Python para 3.8+ |
+
+### Debug
+
+Para debug detalhado, remover a supressão de warnings em `app.py`:
+```python
+# Remover esta linha:
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+```
+
+---
+
+## Dependências
+
+### requirements.txt
+```
+flet>=0.21.0
+pyinstaller>=5.0  # apenas para gerar executável
+```
+
+### Bibliotecas Padrão Python
+- `sqlite3` — banco de dados
+- `json` — configurações
+- `datetime` — datas e timestamps
+- `shutil` — cópia de arquivos (backup)
+- `os` — manipulação de arquivos
+- `re` — expressões regulares (validações)
+- `calendar` — calendário integrado
+- `csv` — exportação de relatórios
+- `dataclasses` — modelos de dados
+
+---
+
+## Roadmap Futuro
 
 ### Melhorias Planejadas
-
 - [ ] Testes unitários automatizados
 - [ ] Logs de auditoria
 - [ ] Relatórios em PDF
@@ -507,8 +479,7 @@ flet==0.80.5
 - [ ] API REST (opcional)
 - [ ] Multi-usuário com autenticação
 
-### Otimizações Futuras
-
+### Otimizações
 - [ ] Cache de consultas frequentes
 - [ ] Paginação de resultados grandes
 - [ ] Índices adicionais no banco
@@ -516,27 +487,14 @@ flet==0.80.5
 
 ---
 
-## 📞 Suporte Técnico
+## Métricas de Performance
 
-### Informações de Debug
-
-Para reportar problemas, incluir:
-- Versão do Python (`python --version`)
-- Versão do Flet (`pip show flet`)
-- Sistema operacional
-- Mensagem de erro completa
-- Passos para reproduzir
-
-### Logs
-
-Logs são exibidos no console durante execução.
-Para debug detalhado, remover:
-```python
-warnings.filterwarnings("ignore", category=DeprecationWarning)
-```
+- **Tempo de inicialização**: < 2 segundos
+- **Módulos GUI**: 7+ arquivos independentes
+- **Linhas de código GUI**: ~2.300
+- **Design tokens**: 12 constantes centralizadas em BaseTab
 
 ---
 
-**Última Atualização**: 11/02/2026  
 **Versão do Documento**: 1.0.0  
-**Mantido por**: Equipe de Desenvolvimento
+**Última Atualização**: 19/06/2026
