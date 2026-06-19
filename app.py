@@ -79,7 +79,6 @@ class FastTechApp:
     
     def on_page_resize(self, e):
         """Callback para quando a página é redimensionada"""
-        # Atualizar layout responsivo se necessário
         self.page.update()
     
     def is_mobile_view(self):
@@ -109,111 +108,166 @@ class FastTechApp:
             expand=True,
         )
         
-        # Botões de navegação
-        def ir_para_dashboard(e):
-            self.content_container.content = self.dashboard_content
-            self.page.update()
+        # Lista de conteúdos das abas
+        self.conteudos_abas = [
+            self.dashboard_content,
+            self.clientes_content,
+            self.equipamentos_content,
+            self.movimentacoes_content,
+            self.consultas_content,
+            self.configuracoes_content,
+        ]
         
-        def ir_para_clientes(e):
-            self.content_container.content = self.clientes_content
-            self.page.update()
+        # Estado da sidebar
+        self.sidebar_expanded = True
+        self.sidebar_width = 220
+        self.sidebar_collapsed_width = 72
+        self.aba_selecionada = 0
         
-        def ir_para_equipamentos(e):
-            self.content_container.content = self.equipamentos_content
-            self.page.update()
+        # Itens do menu
+        self.menu_items = [
+            ("🏠", ft.Icons.HOME_OUTLINED, ft.Icons.HOME, "Dashboard"),
+            ("👥", ft.Icons.PEOPLE_OUTLINED, ft.Icons.PEOPLE, "Clientes"),
+            ("📦", ft.Icons.DEVICES_OUTLINED, ft.Icons.DEVICES, "Equipamentos"),
+            ("🔄", ft.Icons.SWAP_HORIZ_OUTLINED, ft.Icons.SWAP_HORIZ, "Movimentações"),
+            ("🔍", ft.Icons.SEARCH_OUTLINED, ft.Icons.SEARCH, "Consultas"),
+            ("⚙️", ft.Icons.SETTINGS_OUTLINED, ft.Icons.SETTINGS, "Configurações"),
+        ]
         
-        def ir_para_movimentacoes(e):
-            self.content_container.content = self.movimentacoes_content
-            self.page.update()
+        # Container da sidebar (referência para atualização)
+        self.sidebar_container = ft.Container()
+        self.criar_sidebar()
         
-        def ir_para_consultas(e):
-            self.content_container.content = self.consultas_content
-            self.page.update()
-        
-        def ir_para_configuracoes(e):
-            self.content_container.content = self.configuracoes_content
-            self.page.update()
-        
-        # Barra de navegação responsiva
-        nav_bar = ft.Container(
-            content=ft.Row(
-                [
-                    ft.FilledButton(
-                        "🏠 Dashboard",
-                        on_click=ir_para_dashboard,
-                        style=ft.ButtonStyle(
-                            shape=ft.RoundedRectangleBorder(radius=8),
-                            padding=ft.Padding(left=20, right=20, top=12, bottom=12),
-                            elevation={"": 3, "hovered": 6},
-                        ),
-                    ),
-                    ft.FilledButton(
-                        "👥 Clientes",
-                        on_click=ir_para_clientes,
-                        style=ft.ButtonStyle(
-                            shape=ft.RoundedRectangleBorder(radius=8),
-                            padding=ft.Padding(left=20, right=20, top=12, bottom=12),
-                            elevation={"": 3, "hovered": 6},
-                        ),
-                    ),
-                    ft.FilledButton(
-                        "📦 Equipamentos",
-                        on_click=ir_para_equipamentos,
-                        style=ft.ButtonStyle(
-                            shape=ft.RoundedRectangleBorder(radius=8),
-                            padding=ft.Padding(left=20, right=20, top=12, bottom=12),
-                            elevation={"": 3, "hovered": 6},
-                        ),
-                    ),
-                    ft.FilledButton(
-                        "🔄 Movimentações",
-                        on_click=ir_para_movimentacoes,
-                        style=ft.ButtonStyle(
-                            shape=ft.RoundedRectangleBorder(radius=8),
-                            padding=ft.Padding(left=20, right=20, top=12, bottom=12),
-                            elevation={"": 3, "hovered": 6},
-                        ),
-                    ),
-                    ft.FilledButton(
-                        "🔍 Consultas",
-                        on_click=ir_para_consultas,
-                        style=ft.ButtonStyle(
-                            shape=ft.RoundedRectangleBorder(radius=8),
-                            padding=ft.Padding(left=20, right=20, top=12, bottom=12),
-                            elevation={"": 3, "hovered": 6},
-                        ),
-                    ),
-                    ft.FilledButton(
-                        "⚙️ Configurações",
-                        on_click=ir_para_configuracoes,
-                        style=ft.ButtonStyle(
-                            shape=ft.RoundedRectangleBorder(radius=8),
-                            padding=ft.Padding(left=20, right=20, top=12, bottom=12),
-                            elevation={"": 3, "hovered": 6},
-                        ),
-                    ),
-                ],
-                alignment=ft.MainAxisAlignment.START,
-                spacing=12,
-                wrap=True,  # Permite quebra de linha em telas pequenas
-                run_spacing=10,  # Espaçamento vertical quando quebra linha
-            ),
-            bgcolor=self.get_bg_color(),
-            padding=15,
-        )
-        
-        # Layout principal
+        # Layout principal: Row (sidebar + conteúdo)
         self.page.add(
-            ft.Column(
+            ft.Row(
                 [
-                    header,
-                    nav_bar,
-                    self.content_container,
+                    self.sidebar_container,
+                    ft.Column(
+                        [
+                            header,
+                            self.content_container,
+                        ],
+                        spacing=0,
+                        expand=True,
+                    ),
                 ],
                 spacing=0,
                 expand=True,
             )
         )
+    
+    def criar_sidebar(self):
+        """Cria ou atualiza a sidebar"""
+        menu_buttons = []
+        
+        for i, (emoji, icon_outlined, icon_filled, label) in enumerate(self.menu_items):
+            is_selected = (i == self.aba_selecionada)
+            
+            if self.sidebar_expanded:
+                # Modo expandido: ícone + texto lado a lado
+                icon_widget = ft.Icon(
+                    icon_filled if is_selected else icon_outlined,
+                    color=ft.Colors.WHITE if is_selected else ft.Colors.WHITE70,
+                    size=22,
+                )
+                text_widget = ft.Text(
+                    label,
+                    color=ft.Colors.WHITE if is_selected else ft.Colors.WHITE70,
+                    size=13,
+                    weight=ft.FontWeight.W_500 if is_selected else ft.FontWeight.NORMAL,
+                    expand=True,
+                )
+                btn_content = ft.Row(
+                    [icon_widget, text_widget],
+                    spacing=12,
+                    alignment=ft.MainAxisAlignment.START,
+                    expand=True,
+                )
+                btn_width = self.sidebar_width - 32
+            else:
+                # Modo colapsado: apenas ícone
+                btn_content = ft.Icon(
+                    icon_filled if is_selected else icon_outlined,
+                    color=ft.Colors.WHITE if is_selected else ft.Colors.WHITE70,
+                    size=22,
+                )
+                btn_width = 56
+            
+            btn = ft.Container(
+                content=btn_content,
+                width=btn_width,
+                height=44,
+                padding=ft.padding.only(left=14, right=10, top=10, bottom=10),
+                border_radius=8,
+                bgcolor=ft.Colors.BLUE_700 if is_selected else ft.Colors.TRANSPARENT,
+                on_click=lambda e, idx=i: self.navegar_para(idx),
+                ink=True,
+            )
+            menu_buttons.append(btn)
+        
+        # Botão de colapsar/expandir
+        toggle_icon = ft.Icons.CHEVRON_LEFT if self.sidebar_expanded else ft.Icons.CHEVRON_RIGHT
+        toggle_btn = ft.Container(
+            content=ft.Icon(toggle_icon, color=ft.Colors.WHITE70, size=20),
+            width=56 if not self.sidebar_expanded else self.sidebar_width - 32,
+            height=42,
+            padding=ft.padding.only(left=14, right=10, top=11, bottom=11),
+            border_radius=8,
+            on_click=lambda e: self.toggle_sidebar(),
+            ink=True,
+        )
+        
+        # Montar sidebar
+        sidebar_content = ft.Column(
+            [
+                # Logo/título no topo
+                ft.Container(
+                    content=ft.Row(
+                        [
+                            ft.Icon(ft.Icons.SETTINGS, color=ft.Colors.WHITE, size=24),
+                            ft.Text(
+                                "FastTech",
+                                color=ft.Colors.WHITE,
+                                size=16,
+                                weight=ft.FontWeight.BOLD,
+                                visible=self.sidebar_expanded,
+                            ),
+                        ],
+                        spacing=10,
+                        alignment=ft.MainAxisAlignment.CENTER if not self.sidebar_expanded else ft.MainAxisAlignment.START,
+                        expand=self.sidebar_expanded,
+                    ),
+                    padding=ft.padding.only(left=12, right=8, top=16, bottom=16),
+                ),
+                ft.Divider(height=1, color=ft.Colors.GREY_800),
+                # Itens do menu
+                ft.Column(menu_buttons, spacing=4, expand=True),
+                ft.Divider(height=1, color=ft.Colors.GREY_800),
+                # Botão colapsar
+                toggle_btn,
+            ],
+            spacing=0,
+            expand=True,
+        )
+        
+        self.sidebar_container.content = sidebar_content
+        self.sidebar_container.width = self.sidebar_width if self.sidebar_expanded else self.sidebar_collapsed_width
+        self.sidebar_container.bgcolor = ft.Colors.with_opacity(0.95, ft.Colors.BLUE_GREY_900)
+        self.sidebar_container.padding = ft.padding.only(left=8, right=6, top=0, bottom=0)
+    
+    def toggle_sidebar(self):
+        """Alterna entre sidebar expandida e colapsada"""
+        self.sidebar_expanded = not self.sidebar_expanded
+        self.criar_sidebar()
+        self.page.update()
+    
+    def navegar_para(self, index):
+        """Navega para a aba selecionada"""
+        self.aba_selecionada = index
+        self.content_container.content = self.conteudos_abas[index]
+        self.criar_sidebar()
+        self.page.update()
     
     def criar_header(self):
         """Cria o cabeçalho da aplicação"""

@@ -25,11 +25,12 @@ Na primeira execução, o banco de dados `fastech.db` é criado automaticamente.
 
 ```
 fastech_OS/
-├── app.py                 # Aplicação principal (orquestração)
+├── app.py                 # Aplicação principal (orquestração + sidebar)
 ├── database.py            # Camada de dados (SQLite)
 ├── models.py              # Modelos e constantes
 ├── config.json            # Configurações do usuário
 ├── requirements.txt       # Dependências
+├── PROJECT_PROGRESS.md    # Documento de estado do projeto (para IAs)
 ├── gui/                   # Interface gráfica
 │   ├── base.py            # Classe BaseTab (design system)
 │   ├── dashboard.py       # Dashboard principal
@@ -42,6 +43,8 @@ fastech_OS/
 ├── utils/
 │   ├── validators.py      # Validações (CPF, CNPJ, telefone, email)
 │   └── backup.py          # Sistema de backup
+├── docs/
+│   └── DOCUMENTACAO_TECNICA.md  # Documentação técnica completa
 └── backups/               # Diretório de backups automáticos
 ```
 
@@ -66,7 +69,8 @@ O arquivo `config.json` controla:
 
 ## Documentação Técnica
 
-Consulte [docs/DOCUMENTACAO_TECNICA.md](docs/DOCUMENTACAO_TECNICA.md) para detalhes sobre arquitetura, banco de dados, convenções de código e como estender o sistema.
+- [docs/DOCUMENTACAO_TECNICA.md](docs/DOCUMENTACAO_TECNICA.md) — Arquitetura, banco de dados, convenções de código e como estender o sistema
+- [PROJECT_PROGRESS.md](PROJECT_PROGRESS.md) — Estado atual do projeto, regras para IAs e histórico de mudanças
 
 ## Licença
 

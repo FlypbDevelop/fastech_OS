@@ -69,10 +69,57 @@ class NomeTab(BaseTab):
 
 `FastTechApp` em `app.py` gerencia:
 - Inicialização do banco de dados e configurações
-- Navegação entre abas (swapping de conteúdo no `content_container`)
+- Navegação entre abas via **sidebar lateral customizada** (não usa NavigationRail do Flet)
 - Backup automático na inicialização
 - Limpeza de backups antigos
-- Header e barra de navegação
+- Header e sidebar colapsável
+
+### Sidebar Lateral (app.py)
+
+A navegação utiliza uma sidebar customizada com:
+
+```python
+# Estado da sidebar
+self.sidebar_expanded = True       # Estado inicial
+self.sidebar_width = 220           # Largura expandida (px)
+self.sidebar_collapsed_width = 72  # Largura colapsada (px)
+self.aba_selecionada = 0           # Índice da aba ativa
+
+# Itens do menu (ícone outlined, ícone filled, label)
+self.menu_items = [
+    ("🏠", ft.Icons.HOME_OUTLINED, ft.Icons.HOME, "Dashboard"),
+    ("👥", ft.Icons.PEOPLE_OUTLINED, ft.Icons.PEOPLE, "Clientes"),
+    ("📦", ft.Icons.DEVICES_OUTLINED, ft.Icons.DEVICES, "Equipamentos"),
+    ("🔄", ft.Icons.SWAP_HORIZ_OUTLINED, ft.Icons.SWAP_HORIZ, "Movimentações"),
+    ("🔍", ft.Icons.SEARCH_OUTLINED, ft.Icons.SEARCH, "Consultas"),
+    ("⚙️", ft.Icons.SETTINGS_OUTLINED, ft.Icons.SETTINGS, "Configurações"),
+]
+```
+
+**Funcionamento:**
+- Modo expandido: ícone + texto lado a lado (220px)
+- Modo colapsado: apenas ícone centralizado (72px)
+- Botão toggle (◀/▶) no rodapé para alternar
+- Aba ativa: fundo `BLUE_700` + ícone preenchido branco
+- Itens inativos: ícone e texto `WHITE70` sobre fundo transparente
+- Padding lateral: 8px esquerda, 6px direita
+- Animação de transição suave
+
+**Layout principal:**
+```python
+ft.Row(
+    [
+        self.sidebar_container,  # Sidebar lateral
+        ft.Column(
+            [header, self.content_container],  # Header + conteúdo
+            spacing=0,
+            expand=True,
+        ),
+    ],
+    spacing=0,
+    expand=True,
+)
+```
 
 ---
 
@@ -368,7 +415,14 @@ class NovaAbaTab(BaseTab):
 ```
 
 2. Importar em `app.py` e adicionar método de criação
-3. Adicionar botão de navegação na barra lateral
+3. Adicionar item na lista `self.menu_items`:
+```python
+self.menu_items = [
+    # ... itens existentes
+    ("📄", ft.Icons.DESCRIPTION_OUTLINED, ft.Icons.DESCRIPTION, "Nova Aba"),
+]
+```
+4. Adicionar conteúdo na lista `self.conteudos_abas` na mesma posição
 
 ### Adicionar Nova Validação
 
@@ -435,6 +489,7 @@ SQLite (servicos_equipamentos)
 | Tema não aplica | Verificar se salvou em Configurações |
 | Backup falha | Verificar permissões da pasta `backups/` |
 | Python < 3.8 | Atualizar Python para 3.8+ |
+| `module 'flet' has no attribute 'animation'` | Usar `ft.Animation()` (PascalCase), não `ft.animation.Animation()` |
 
 ### Debug
 
@@ -496,5 +551,5 @@ pyinstaller>=5.0  # apenas para gerar executável
 
 ---
 
-**Versão do Documento**: 1.0.0  
+**Versão do Documento**: 1.1.0  
 **Última Atualização**: 19/06/2026
