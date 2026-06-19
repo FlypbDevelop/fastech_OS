@@ -107,10 +107,10 @@ class EquipamentoView:
         self.novo_status_row = ft.Row(
             [
                 self.novo_status_field,
-                ft.FilledButton(
+                self.orc.botao_primario(
                     "💾 Salvar status",
                     on_click=self._salvar_novo_status,
-                    style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=8)),
+                    radius=8,
                 ),
             ],
             spacing=8,
@@ -211,10 +211,10 @@ class EquipamentoView:
                     ft.Row(
                         [
                             self.serial_busca_field,
-                            ft.FilledButton(
+                            self.orc.botao_primario(
                                 "🔍 Buscar",
                                 on_click=lambda e: self.buscar_por_serial(),
-                                style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=8)),
+                                radius=8,
                             ),
                         ],
                         spacing=10,
@@ -348,17 +348,15 @@ class EquipamentoView:
 
         acoes = ft.Row(
             [
-                ft.FilledButton(
+                self.orc.botao_primario(
                     "🔧 Registrar Novo Serviço",
                     on_click=registrar_servico_equipamento,
-                    expand=True,
-                    style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=8)),
+                    expand=True, radius=8,
                 ),
-                ft.FilledButton(
+                self.orc.botao_primario(
                     "✏️ Editar Equipamento",
                     on_click=editar_equipamento,
-                    expand=True,
-                    style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=8)),
+                    expand=True, radius=8,
                 ),
             ],
             spacing=10,
@@ -553,17 +551,15 @@ class EquipamentoView:
                     self.equipamento_status,
                     ft.Row(
                         [
-                            ft.FilledButton(
+                            self.orc.botao_primario(
                                 "💾 Salvar",
                                 on_click=self.salvar_equipamento,
-                                expand=True,
-                                style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=8)),
+                                expand=True, radius=8,
                             ),
-                            ft.FilledButton(
+                            self.orc.botao_primario(
                                 "🔄 Limpar",
                                 on_click=self.limpar_form_equipamento,
-                                expand=True,
-                                style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=8)),
+                                expand=True, radius=8,
                             ),
                         ],
                         spacing=10,

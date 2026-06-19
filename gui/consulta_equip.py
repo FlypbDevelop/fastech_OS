@@ -40,7 +40,7 @@ class EquipamentoConsultaView:
                     ft.Row(
                         [
                             self.equip_search_field,
-                            ft.FilledButton("🔍 Buscar", on_click=lambda e: self.buscar_equipamento_consulta(), style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
+                            self.orc.botao_primario("🔍 Buscar", on_click=lambda e: self.buscar_equipamento_consulta()),
                         ],
                         spacing=10,
                     ),

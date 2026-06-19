@@ -27,9 +27,9 @@ class ConsultasTab(BaseTab):
         subnav = ft.Container(
             content=ft.Row(
                 [
-                    ft.FilledButton("📦 Por Equipamento", on_click=self.ir_para_equipamento, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
-                    ft.FilledButton("👤 Por Cliente", on_click=self.ir_para_cliente, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
-                    ft.FilledButton("📊 Relatórios", on_click=self.ir_para_relatorios, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
+                    self.botao_primario("📦 Por Equipamento", on_click=self.ir_para_equipamento),
+                    self.botao_primario("👤 Por Cliente", on_click=self.ir_para_cliente),
+                    self.botao_primario("📊 Relatórios", on_click=self.ir_para_relatorios),
                 ],
                 spacing=10,
             ),

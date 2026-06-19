@@ -30,9 +30,9 @@ class ConfiguracoesTab(BaseTab):
         subnav = ft.Container(
             content=ft.Row(
                 [
-                    ft.FilledButton("💾 Backup", on_click=self.ir_para_backup, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
-                    ft.FilledButton("⚙️ Geral", on_click=self.ir_para_geral, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
-                    ft.FilledButton("ℹ️ Sobre", on_click=self.ir_para_sobre, style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
+                    self.botao_primario("💾 Backup", on_click=self.ir_para_backup),
+                    self.botao_primario("⚙️ Geral", on_click=self.ir_para_geral),
+                    self.botao_primario("ℹ️ Sobre", on_click=self.ir_para_sobre),
                 ],
                 spacing=10,
             ),
@@ -166,8 +166,8 @@ class ConfiguracoesTab(BaseTab):
                     ft.Text("Gerenciar Backups", size=16, weight=ft.FontWeight.BOLD),
                     ft.Row(
                         [
-                            ft.FilledButton("💾 Criar Backup Agora", on_click=self.criar_backup_agora),
-                            ft.FilledButton("💾 Salvar Configurações", on_click=self.salvar_config_backup),
+                            self.botao_primario("💾 Criar Backup Agora", on_click=self.criar_backup_agora),
+                            self.botao_primario("💾 Salvar Configurações", on_click=self.salvar_config_backup),
                         ],
                         spacing=10,
                         alignment=ft.MainAxisAlignment.CENTER,
@@ -281,7 +281,7 @@ Equipamentos por Status:
                     stats_card,
                     ft.Text("Banco de Dados", size=16, weight=ft.FontWeight.BOLD),
                     ft.Text(f"Arquivo: fastech.db\nTamanho: {self.get_db_size()}", size=14),
-                    ft.FilledButton("💾 Salvar Configurações", on_click=self.salvar_config_geral),
+                    self.botao_primario("💾 Salvar Configurações", on_click=self.salvar_config_geral),
                     self.geral_status,
                 ],
                 spacing=15,
@@ -350,7 +350,7 @@ Tecnologias:
                     ft.Container(height=10),
                     info_card,
                     ft.Container(height=10),
-                    ft.FilledButton("🔧 Verificar Sistema", on_click=self.verificar_sistema),
+                    self.botao_primario("🔧 Verificar Sistema", on_click=self.verificar_sistema),
                     ft.Container(height=20),
                 ],
                 spacing=15,

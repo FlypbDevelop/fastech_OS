@@ -38,14 +38,14 @@ class RelatorioView:
                     ft.Text("Exportar Dados", size=16, weight=ft.FontWeight.BOLD),
                     ft.Row(
                         [
-                            ft.FilledButton("📄 Exportar Clientes (CSV)", on_click=lambda e: self.exportar_clientes_csv(), style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
-                            ft.FilledButton("📄 Exportar Equipamentos (CSV)", on_click=lambda e: self.exportar_equipamentos_csv(), style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
-                            ft.FilledButton("📄 Exportar Histórico (CSV)", on_click=lambda e: self.exportar_historico_csv(), style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
+                            self.orc.botao_primario("📄 Exportar Clientes (CSV)", on_click=lambda e: self.exportar_clientes_csv()),
+                            self.orc.botao_primario("📄 Exportar Equipamentos (CSV)", on_click=lambda e: self.exportar_equipamentos_csv()),
+                            self.orc.botao_primario("📄 Exportar Histórico (CSV)", on_click=lambda e: self.exportar_historico_csv()),
                         ],
                         spacing=10,
                     ),
                     self.relatorio_status,
-                    ft.FilledButton("🔄 Atualizar Estatísticas", on_click=lambda e: self.atualizar_estatisticas(), style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10))),
+                    self.orc.botao_primario("🔄 Atualizar Estatísticas", on_click=lambda e: self.atualizar_estatisticas()),
                 ],
                 spacing=15,
                 scroll=ft.ScrollMode.AUTO,

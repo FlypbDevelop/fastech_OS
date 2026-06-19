@@ -112,10 +112,10 @@ class ServicoView:
         self.novo_tipo_row = ft.Row(
             [
                 self.novo_tipo_field,
-                ft.FilledButton(
+                self.orc.botao_primario(
                     "💾 Salvar tipo",
                     on_click=self._salvar_novo_tipo,
-                    style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=8)),
+                    radius=8,
                 ),
             ],
             spacing=8,
@@ -185,10 +185,10 @@ class ServicoView:
                     [
                         ft.Text("⚠️ Nenhum equipamento selecionado", size=18, color=ft.Colors.ORANGE),
                         ft.Text("Busque um equipamento primeiro para registrar serviços", size=14),
-                        ft.FilledButton(
+                        self.orc.botao_primario(
                             "🔍 Buscar Equipamento",
                             on_click=lambda e: self.orc.mostrar_busca(),
-                            style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=8)),
+                            radius=8,
                         ),
                     ],
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -241,17 +241,17 @@ class ServicoView:
                     self.servico_status,
                     ft.Row(
                         [
-                            ft.FilledButton(
+                            self.orc.botao_primario(
                                 "💾 Salvar Serviço",
                                 on_click=self.salvar_servico,
                                 expand=True,
-                                style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=8)),
+                                radius=8,
                             ),
-                            ft.FilledButton(
+                            self.orc.botao_primario(
                                 "🔄 Limpar",
                                 on_click=self.limpar_form_servico,
                                 expand=True,
-                                style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=8)),
+                                radius=8,
                             ),
                         ],
                         spacing=10,

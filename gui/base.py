@@ -37,6 +37,18 @@ class BaseTab:
         except Exception:
             return False
 
+    def botao_primario(self, texto, on_click, *, expand=False, radius=None, **kwargs):
+        """Cria um ft.FilledButton padronizado com o design system"""
+        return ft.FilledButton(
+            texto,
+            on_click=on_click,
+            expand=expand,
+            style=ft.ButtonStyle(
+                shape=ft.RoundedRectangleBorder(radius=radius or self.BORDER_RADIUS),
+            ),
+            **kwargs,
+        )
+
     def get_adaptive_color(self, dark_color, light_color):
         """Retorna cor adaptativa baseada no tema atual"""
         if self.page.theme_mode == ft.ThemeMode.LIGHT:
